@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Complaint-Report-Registering-API.props" />
+</Project>
