@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Complaint-Report-Registering-API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d73aba88ae58c0dade44120361c9758d2080fb32")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3735c9c117502fac5a962f8e46f8d87a41de045c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Complaint-Report-Registering-API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Complaint-Report-Registering-API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
