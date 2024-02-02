@@ -1,7 +1,9 @@
 using System.Text;
+using Complaint_Report_Registering_API;
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.Data;
 using Complaint_Report_Registering_API.Repositories;
+using Complaint_Report_Registering_API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +25,8 @@ builder.Services.AddControllers();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>()
 .AddSignInManager()
-.AddRoles<IdentityRole>();
+.AddRoles<IdentityRole>()
+.AddDefaultTokenProviders();
 // JWT
 builder.Services.AddAuthentication(options =>
 {
@@ -56,6 +59,21 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddScoped<IAccount, AccountRepository>();
 
+builder.Services.Configure<MailSetting>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.AddTransient<IMailService, MailService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+        });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -64,6 +82,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// app.MapIdentityApi<IdentityUser>();
+app.UseCors("AllowAllOrigins");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

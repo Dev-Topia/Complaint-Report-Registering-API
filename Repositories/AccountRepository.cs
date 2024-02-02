@@ -4,6 +4,8 @@ using System.Text;
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.Data;
 using Complaint_Report_Registering_API.DTOs;
+using Complaint_Report_Registering_API.Entities;
+using Complaint_Report_Registering_API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using WebApiWithPostgreSQL.DTOs;
@@ -11,8 +13,20 @@ using static Complaint_Report_Registering_API.DTOs.ServiceResponses;
 
 namespace Complaint_Report_Registering_API.Repositories
 {
-    public class AccountRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration config) : IAccount
+    public class AccountRepository(UserManager<ApplicationUser> userManager,
+                                    RoleManager<IdentityRole> roleManager,
+                                    SignInManager<ApplicationUser> signInManager,
+                                    IConfiguration config,
+                                    IMailService mailService) : IAccount
     {
+        public async Task<Test> ConvertToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var claims = jwtToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+            return new Test(true, claims);
+        }
+
         public async Task<GeneralResponse> CreateAccount(UserDTO userDTO)
         {
             if (userDTO is null) return new GeneralResponse(false, "Model is empty");
@@ -47,6 +61,35 @@ namespace Complaint_Report_Registering_API.Repositories
                 return new GeneralResponse(true, "Account Created");
             }
         }
+
+        public async Task<GeneralResponse> CreateResetToken(MailData mailData)
+        {
+            var user = await userManager.FindByEmailAsync(mailData.EmailToId);
+            if (user == null)
+                return new GeneralResponse(false, "User not found");
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+            mailData.EmailBody = $"Your password reset token is: {token}";
+            var response = await mailService.SendMailAsync(mailData);
+            if (!response)
+            {
+                return new GeneralResponse(false, "Failed to generate reset token");
+            }
+            return new GeneralResponse(true, "Reset token generated");
+        }
+
+        public Task<bool> IsUserLoggedIn(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+
+            if (jwtToken == null)
+                return Task.FromResult(false);
+
+            return Task.FromResult(jwtToken.ValidTo > DateTime.UtcNow);
+        }
+
         public async Task<LoginResponse> LoginAccount(LoginDTO loginDTO)
         {
             if (loginDTO == null)
@@ -55,16 +98,36 @@ namespace Complaint_Report_Registering_API.Repositories
             var getUser = await userManager.FindByEmailAsync(loginDTO.Email);
             if (getUser is null)
                 return new LoginResponse(false, null!, "User not found");
-
-            bool checkUserPasswords = await userManager.CheckPasswordAsync(getUser, loginDTO.Password);
-            if (!checkUserPasswords)
+            // bool checkUserPasswords = await userManager.CheckPasswordAsync(getUser, loginDTO.Password);
+            // if (!checkUserPasswords)
+            //     return new LoginResponse(false, null!, "Invalid email/password");
+            var result = await signInManager.PasswordSignInAsync(getUser, loginDTO.Password, isPersistent: false, lockoutOnFailure: false);
+            if (!result.Succeeded)
                 return new LoginResponse(false, null!, "Invalid email/password");
 
             var getUserRole = await userManager.GetRolesAsync(getUser);
             var userSession = new UserSession(getUser.Id, getUser.Name, getUser.Email, getUserRole.First());
-            string token = GenerateToken(userSession);
-            return new LoginResponse(true, token!, "Login completed");
+            string jwtToken = GenerateToken(userSession);
+            return new LoginResponse(true, jwtToken!, "Login completed");
         }
+
+        public async Task<GeneralResponse> LogoutAccount()
+        {
+            await signInManager.SignOutAsync();
+            return new GeneralResponse(true, "Logout successful");
+        }
+
+        public async Task<GeneralResponse> ResetPassword(string resetToken, string email, string newPassword)
+        {
+            var getUser = await userManager.FindByEmailAsync(email);
+            if (getUser is null)
+                return new GeneralResponse(false, "User not found");
+            var result = await userManager.ResetPasswordAsync(getUser, resetToken, newPassword);
+            if (!result.Succeeded)
+                return new GeneralResponse(false, "Password reset failed");
+            return new GeneralResponse(true, "Email Successfully send!");
+        }
+
         private string GenerateToken(UserSession user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
