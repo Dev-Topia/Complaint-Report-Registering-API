@@ -41,7 +41,14 @@ namespace Complaint_Report_Registering_API.Repositories
             if (user is not null) return new GeneralResponse(false, "User registered already");
 
             var createUser = await userManager.CreateAsync(newUser!, userDTO.Password);
-            if (!createUser.Succeeded) return new GeneralResponse(false, "Error occured.. please try again");
+            if (!createUser.Succeeded)
+            {
+                foreach (var error in createUser.Errors)
+                {
+                    Console.Error.WriteLine(error.Description);
+                }
+                return new GeneralResponse(false, "Error occured.. please try again");
+            }
 
             //Assign Default Role : Admin to first registrar; rest is user
             var checkAdmin = await roleManager.FindByNameAsync("Admin");

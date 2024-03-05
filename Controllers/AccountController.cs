@@ -35,16 +35,19 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(response);
         }
-        // [HttpGet("status")]
-        // public async Task<IActionResult> IsUserLoggedIn(string token)
-        // {
-        //     var response = await account.IsUserLoggedIn(token);
-        //     if (response == false)
-        //     {
-        //         return BadRequest(response);
-        //     }
-        //     return Ok(response);
-        // }
+        [HttpGet("status")]
+        [Authorize]
+        public IActionResult IsUserLoggedIn()
+        {
+            // var response = await account.IsUserLoggedIn(token);
+            // if (response == false)
+            // {
+            //     return BadRequest(response);
+            // }
+            // return Ok(response);
+            var status = new { msg = "User is logged in" };
+            return Ok(status);
+        }
         [HttpPost("sign-out")]
         public async Task<IActionResult> LogoutAccount()
         {
@@ -63,9 +66,9 @@ namespace Complaint_Report_Registering_API.Controllers
             var response = await account.ResetPassword(resetToken, email, newPassword);
             return Ok(response);
         }
-        [HttpPost("{token}")]
+        [HttpPost("convert-token")]
         [Authorize]
-        public async Task<IActionResult> ConvertToken(string token)
+        public async Task<IActionResult> ConvertToken([FromHeader] string token)
         {
             var response = await account.ConvertToken(token);
             return Ok(response);
