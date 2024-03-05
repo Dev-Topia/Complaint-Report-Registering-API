@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\Complaint-Report-Registering-API.props" />
-</Project>
