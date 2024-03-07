@@ -8,5 +8,6 @@ namespace Complaint_Report_Registering_API.Data
     {
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Post> Post { get; set; }
+        public DbSet<Complaint> Complaint { get; set; }
     }
 }
