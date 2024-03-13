@@ -12,21 +12,21 @@ namespace Complaint_Report_Registering_API.Repositories
         public async Task<GeneralResponse> RegsiterComplaint(Complaint complaint)
         {
             if (complaint is null) return new GeneralResponse(false, "Model is empty!");
-            context.Complaint.Add(complaint);
+            context.Complaints.Add(complaint);
             await context.SaveChangesAsync();
             return new GeneralResponse(true, "Register Successfully!");
         }
         public async Task<ArrayResponse> ViewAllComplaint()
         {
-            var complaints = await context.Complaint.ToListAsync();
+            var complaints = await context.Complaints.ToListAsync();
             return new ArrayResponse(true, complaints);
         }
         public async Task<ObjectResponse> ViewComplaint(string id)
         {
-            var complaint = await context.Complaint.FindAsync(new Guid(id));
+            var complaint = await context.Complaints.FindAsync(new Guid(id));
             if (complaint == null)
             {
-                return new ObjectResponse(false, "Complaint not found");
+                return new ObjectResponse(false, "Complaints not found");
             }
             var complaintGetDTO = new ComplaintGetDTO
             {
@@ -41,30 +41,30 @@ namespace Complaint_Report_Registering_API.Repositories
         }
         public async Task<GeneralResponse> DeleteComplaint(string id)
         {
-            var complaint = await context.Complaint.FindAsync(new Guid(id));
+            var complaint = await context.Complaints.FindAsync(new Guid(id));
             if (complaint == null)
             {
-                return new GeneralResponse(false, "Complaint not found!");
+                return new GeneralResponse(false, "Complaints not found!");
             }
-            context.Complaint.Remove(complaint);
+            context.Complaints.Remove(complaint);
             await context.SaveChangesAsync();
 
-            return new GeneralResponse(true, "Complaint deleted successfully!");
+            return new GeneralResponse(true, "Complaints deleted successfully!");
         }
         public async Task<GeneralResponse> EditComplaint(string id, ComplaintPostDTO updatedComplaint)
         {
-            var complaint = await context.Complaint.FindAsync(new Guid(id));
+            var complaint = await context.Complaints.FindAsync(new Guid(id));
             if (complaint == null)
             {
-                return new GeneralResponse(false, "Complaint not found!");
+                return new GeneralResponse(false, "Complaints not found!");
             }
             complaint.Title = updatedComplaint.Title;
             complaint.Type = updatedComplaint.Type;
             complaint.Description = updatedComplaint.Description;
             complaint.UpdatedAt = DateTime.UtcNow;
-            context.Complaint.Update(complaint);
+            context.Complaints.Update(complaint);
             await context.SaveChangesAsync();
-            return new GeneralResponse(true, "Complaint updated successfully");
+            return new GeneralResponse(true, "Complaints updated successfully");
         }
     }
 }

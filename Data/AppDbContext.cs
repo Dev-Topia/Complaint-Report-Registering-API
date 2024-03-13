@@ -7,7 +7,7 @@ namespace Complaint_Report_Registering_API.Data
     public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext(options)
     {
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
-        public DbSet<Post> Post { get; set; }
-        public DbSet<Complaint> Complaint { get; set; }
+        public DbSet<Post> Posts { get; set; }
+        public DbSet<Complaint> Complaints { get; set; }
     }
 }

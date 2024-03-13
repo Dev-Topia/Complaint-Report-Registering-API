@@ -1,6 +1,7 @@
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.DTOs;
 using Complaint_Report_Registering_API.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Complaint_Report_Registering_API.Controllers
@@ -10,12 +11,14 @@ namespace Complaint_Report_Registering_API.Controllers
     public class ComplaintController(IComplaint complaint) : ControllerBase
     {
         [HttpGet("get-all-complaint")]
+        [Authorize]
         public async Task<ActionResult<ComplaintGetDTO>> GetAllComplaint()
         {
             var response = await complaint.ViewAllComplaint();
             return Ok(response);
         }
         [HttpGet("get-single-complaint")]
+        [Authorize]
         public async Task<IActionResult> GetSingleComplaint(string id)
         {
             var response = await complaint.ViewComplaint(id);
@@ -27,6 +30,7 @@ namespace Complaint_Report_Registering_API.Controllers
         }
 
         [HttpPost("register-complaint")]
+        [Authorize]
         public async Task<IActionResult> RegisterComplaint([FromBody] ComplaintPostDTO complaintPostDTO)
         {
             var newComplaint = new Complaint
@@ -46,6 +50,7 @@ namespace Complaint_Report_Registering_API.Controllers
             return Ok(response);
         }
         [HttpPut("update-complaint")]
+        [Authorize]
         public async Task<IActionResult> UpdateComplaint(string id, [FromBody] ComplaintPostDTO complaintPostDTO)
         {
             var response = await complaint.EditComplaint(id, complaintPostDTO);
@@ -56,6 +61,7 @@ namespace Complaint_Report_Registering_API.Controllers
             return Ok(response);
         }
         [HttpDelete("delete-complaint")]
+        [Authorize]
         public async Task<IActionResult> DeleteComplaint(string id)
         {
             var response = await complaint.DeleteComplaint(id);

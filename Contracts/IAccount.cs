@@ -13,5 +13,7 @@ namespace Complaint_Report_Registering_API.Contracts
         Task<GeneralResponse> ResetPassword(string resetToken, string email, string newPassword);
         Task<bool> IsUserLoggedIn(string token);
         Task<Test> ConvertToken(string token);
+        Task<ObjectResponse> GetUserData(string token);
+        Task<ObjectResponse> GetUserProfile(string userId);
     }
 }

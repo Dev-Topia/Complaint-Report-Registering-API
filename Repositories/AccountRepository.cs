@@ -17,8 +17,37 @@ namespace Complaint_Report_Registering_API.Repositories
                                     RoleManager<IdentityRole> roleManager,
                                     SignInManager<ApplicationUser> signInManager,
                                     IConfiguration config,
-                                    IMailService mailService) : IAccount
+                                    IMailService mailService,
+                                    AppDbContext context) : IAccount
     {
+        public Task<ObjectResponse> GetUserData(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (roleClaim != null && userIdClaim != null)
+            {
+                var data = new { Role = roleClaim.Value, UserId = userIdClaim.Value };
+                return Task.FromResult(new ObjectResponse(true, data));
+            }
+            else
+            {
+                return Task.FromResult(new ObjectResponse(false, "Role or UserId not found in token"));
+            }
+        }
+
+        public async Task<ObjectResponse> GetUserProfile(string userId)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return new ObjectResponse(false, "Profile not found");
+            }
+            return new ObjectResponse(true, user);
+        }
+
         public async Task<Test> ConvertToken(string token)
         {
             var handler = new JwtSecurityTokenHandler();
@@ -32,10 +61,11 @@ namespace Complaint_Report_Registering_API.Repositories
             if (userDTO is null) return new GeneralResponse(false, "Model is empty");
             var newUser = new ApplicationUser()
             {
-                Name = userDTO.Name,
+                UserName = userDTO.FirstName + userDTO.LastName,
+                FirstName = userDTO.FirstName,
+                LastName = userDTO.LastName,
                 Email = userDTO.Email,
                 PasswordHash = userDTO.Password,
-                UserName = userDTO.Email
             };
             var user = await userManager.FindByEmailAsync(newUser.Email);
             if (user is not null) return new GeneralResponse(false, "User registered already");
@@ -100,22 +130,22 @@ namespace Complaint_Report_Registering_API.Repositories
         public async Task<LoginResponse> LoginAccount(LoginDTO loginDTO)
         {
             if (loginDTO == null)
-                return new LoginResponse(false, null!, "Login container is empty");
+                return new LoginResponse(false, null!, null!, null!, "Login container is empty");
 
             var getUser = await userManager.FindByEmailAsync(loginDTO.Email);
             if (getUser is null)
-                return new LoginResponse(false, null!, "User not found");
+                return new LoginResponse(false, null!, null!, null!, "User not found");
             // bool checkUserPasswords = await userManager.CheckPasswordAsync(getUser, loginDTO.Password);
             // if (!checkUserPasswords)
             //     return new LoginResponse(false, null!, "Invalid email/password");
             var result = await signInManager.PasswordSignInAsync(getUser, loginDTO.Password, isPersistent: false, lockoutOnFailure: false);
             if (!result.Succeeded)
-                return new LoginResponse(false, null!, "Invalid email/password");
+                return new LoginResponse(false, null!, null!, null!, "Invalid email/password");
 
             var getUserRole = await userManager.GetRolesAsync(getUser);
-            var userSession = new UserSession(getUser.Id, getUser.Name, getUser.Email, getUserRole.First());
+            var userSession = new UserSession(getUser.Id, getUser.FirstName, getUser.LastName, getUser.Email, getUserRole.First());
             string jwtToken = GenerateToken(userSession);
-            return new LoginResponse(true, jwtToken!, "Login completed");
+            return new LoginResponse(true, jwtToken!, getUser.Id, getUserRole.First(), "Login completed");
         }
 
         public async Task<GeneralResponse> LogoutAccount()
@@ -142,7 +172,7 @@ namespace Complaint_Report_Registering_API.Repositories
             var userClaims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Name, user.FirstName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role)
             };

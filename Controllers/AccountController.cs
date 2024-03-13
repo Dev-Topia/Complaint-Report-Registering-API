@@ -1,28 +1,27 @@
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.DTOs;
-using Complaint_Report_Registering_API.Entities;
 using Complaint_Report_Registering_API.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
 
 namespace Complaint_Report_Registering_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountController(IAccount account) : ControllerBase
+    public class AccountController(IAccount account, IWebHostEnvironment env) : ControllerBase
     {
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
-        {
-            return new string[] { "data1", "data2" };
-        }
-
         [HttpPost("sign-up")]
         [User_ValidationCreateUserFliter]
         public async Task<IActionResult> CreateAccount(UserDTO userDTO)
         {
-            if (userDTO == null) return BadRequest();
             var response = await account.CreateAccount(userDTO);
+            if (response.Flag == false)
+            {
+                return BadRequest(response);
+            }
             return Ok(response);
         }
         [HttpPost("sign-in")]
@@ -33,45 +32,60 @@ namespace Complaint_Report_Registering_API.Controllers
             {
                 return BadRequest(response);
             }
-            return Ok(response);
-        }
-        [HttpGet("status")]
-        [Authorize]
-        public IActionResult IsUserLoggedIn()
-        {
-            // var response = await account.IsUserLoggedIn(token);
-            // if (response == false)
-            // {
-            //     return BadRequest(response);
-            // }
-            // return Ok(response);
-            var status = new { msg = "User is logged in" };
-            return Ok(status);
+            else
+            {
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = !env.IsDevelopment(),
+                    Expires = DateTime.Now.AddDays(1),
+                };
+
+                Response.Cookies.Append("auth_token", response.Token, cookieOptions);
+                return Ok(response);
+            }
         }
         [HttpPost("sign-out")]
+        [Authorize]
         public async Task<IActionResult> LogoutAccount()
         {
             var response = await account.LogoutAccount();
+            if (response.Flag == false)
+            {
+                return BadRequest(response);
+            }
             return Ok(response);
         }
-        [HttpPost("generate-reset-token")]
-        public async Task<IActionResult> CreateResetToken(MailData mailData)
-        {
-            var response = await account.CreateResetToken(mailData);
-            return Ok(response);
-        }
-        [HttpPut("reset-password")]
-        public async Task<IActionResult> ResetPassword(string resetToken, string email, string newPassword)
-        {
-            var response = await account.ResetPassword(resetToken, email, newPassword);
-            return Ok(response);
-        }
-        [HttpPost("convert-token")]
+        [HttpGet("get-user-data")]
         [Authorize]
-        public async Task<IActionResult> ConvertToken([FromHeader] string token)
+        public async Task<IActionResult> GetUserData()
         {
-            var response = await account.ConvertToken(token);
+            var authHeader = HttpContext.Request.Headers.Authorization;
+            var token = authHeader.First()!["Bearer ".Length..].Trim();
+            var response = await account.GetUserData(token);
+            if (response.Flag == false)
+            {
+                return BadRequest(response);
+            }
             return Ok(response);
         }
+        [HttpGet("get-user-profile/{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetUserProfile([FromRoute] string id)
+        {
+            var response = await account.GetUserProfile(id);
+            if (response.Flag == false)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+        // [HttpGet("convert-token")]
+        // [Authorize]
+        // public async Task<IActionResult> ConvertToken([FromHeader] string token)
+        // {
+        //     var response = await account.ConvertToken(token);
+        //     return Ok(response);
+        // }
     }
 }
