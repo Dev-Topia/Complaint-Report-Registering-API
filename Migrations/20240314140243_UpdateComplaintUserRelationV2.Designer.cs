@@ -3,6 +3,7 @@ using System;
 using Complaint_Report_Registering_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Complaint_Report_Registering_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240314140243_UpdateComplaintUserRelationV2")]
+    partial class UpdateComplaintUserRelationV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,6 +52,9 @@ namespace Complaint_Report_Registering_API.Migrations
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -293,11 +299,9 @@ namespace Complaint_Report_Registering_API.Migrations
 
             modelBuilder.Entity("Complaint_Report_Registering_API.Entities.Complaint", b =>
                 {
-                    b.HasOne("Complaint_Report_Registering_API.Data.ApplicationUser", "ApplicationUser")
+                    b.HasOne("Complaint_Report_Registering_API.Data.ApplicationUser", null)
                         .WithMany("Complaints")
                         .HasForeignKey("ApplicationUserId");
-
-                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

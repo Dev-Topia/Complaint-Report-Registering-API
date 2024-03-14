@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using Complaint_Report_Registering_API.Data;
 
 namespace Complaint_Report_Registering_API.Entities
 {
@@ -16,10 +18,8 @@ namespace Complaint_Report_Registering_API.Entities
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-
-        // public Complaint()
-        // {
-        //     this.Id = Guid.NewGuid();
-        // }
+        public string? ApplicationUserId { get; set; }
+        [JsonIgnore]
+        public ApplicationUser? ApplicationUser { get; set; }
     }
 }

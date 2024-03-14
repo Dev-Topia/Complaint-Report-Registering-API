@@ -7,6 +7,7 @@ using Complaint_Report_Registering_API.DTOs;
 using Complaint_Report_Registering_API.Entities;
 using Complaint_Report_Registering_API.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using WebApiWithPostgreSQL.DTOs;
 using static Complaint_Report_Registering_API.DTOs.ServiceResponses;
@@ -40,7 +41,9 @@ namespace Complaint_Report_Registering_API.Repositories
 
         public async Task<ObjectResponse> GetUserProfile(string userId)
         {
-            var user = await context.Users.FindAsync(userId);
+            var user = await context.Users.OfType<ApplicationUser>()
+            .Include(u => u.Complaints)
+            .FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
             {
                 return new ObjectResponse(false, "Profile not found");

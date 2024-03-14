@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Complaint_Report_Registering_API;
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.Data;

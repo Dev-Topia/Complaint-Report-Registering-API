@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.DTOs;
 using Complaint_Report_Registering_API.Entities;
@@ -17,9 +18,9 @@ namespace Complaint_Report_Registering_API.Controllers
             var response = await complaint.ViewAllComplaint();
             return Ok(response);
         }
-        [HttpGet("get-single-complaint")]
+        [HttpGet("get-single-complaint/{id}")]
         [Authorize]
-        public async Task<IActionResult> GetSingleComplaint(string id)
+        public async Task<IActionResult> GetSingleComplaint([FromRoute] string id)
         {
             var response = await complaint.ViewComplaint(id);
             if (response.Flag == false)
@@ -33,6 +34,7 @@ namespace Complaint_Report_Registering_API.Controllers
         [Authorize]
         public async Task<IActionResult> RegisterComplaint([FromBody] ComplaintPostDTO complaintPostDTO)
         {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var newComplaint = new Complaint
             {
                 Id = Guid.NewGuid(),
@@ -40,7 +42,8 @@ namespace Complaint_Report_Registering_API.Controllers
                 Type = complaintPostDTO.Type,
                 Description = complaintPostDTO.Description,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                ApplicationUserId = userId,
             };
             var response = await complaint.RegsiterComplaint(newComplaint);
             if (response.Flag == false)
@@ -49,9 +52,9 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(response);
         }
-        [HttpPut("update-complaint")]
+        [HttpPut("update-complaint/{id}")]
         [Authorize]
-        public async Task<IActionResult> UpdateComplaint(string id, [FromBody] ComplaintPostDTO complaintPostDTO)
+        public async Task<IActionResult> UpdateComplaint([FromRoute] string id, [FromBody] ComplaintPostDTO complaintPostDTO)
         {
             var response = await complaint.EditComplaint(id, complaintPostDTO);
             if (response.Flag == false)
@@ -60,9 +63,9 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(response);
         }
-        [HttpDelete("delete-complaint")]
+        [HttpDelete("delete-complaint/{id}")]
         [Authorize]
-        public async Task<IActionResult> DeleteComplaint(string id)
+        public async Task<IActionResult> DeleteComplaint([FromRoute] string id)
         {
             var response = await complaint.DeleteComplaint(id);
             if (response.Flag == false)
