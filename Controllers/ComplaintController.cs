@@ -12,7 +12,7 @@ namespace Complaint_Report_Registering_API.Controllers
     public class ComplaintController(IComplaint complaint) : ControllerBase
     {
         [HttpGet("get-all-complaint")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ComplaintGetDTO>> GetAllComplaint()
         {
             var response = await complaint.ViewAllComplaint();
