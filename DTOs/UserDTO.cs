@@ -4,7 +4,6 @@ namespace Complaint_Report_Registering_API.DTOs
 {
     public class UserDTO
     {
-        public string? Id { get; set; } = string.Empty;
         [Required]
         public string FirstName { get; set; } = string.Empty;
         [Required]

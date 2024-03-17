@@ -4,8 +4,6 @@ using System.Text;
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.Data;
 using Complaint_Report_Registering_API.DTOs;
-using Complaint_Report_Registering_API.Entities;
-using Complaint_Report_Registering_API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -18,45 +16,39 @@ namespace Complaint_Report_Registering_API.Repositories
                                     RoleManager<IdentityRole> roleManager,
                                     SignInManager<ApplicationUser> signInManager,
                                     IConfiguration config,
-                                    IMailService mailService,
+                                    // IMailService mailService,
                                     AppDbContext context) : IAccount
     {
-        public Task<ObjectResponse> GetUserData(string token)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-
-            var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (roleClaim != null && userIdClaim != null)
-            {
-                var data = new { Role = roleClaim.Value, UserId = userIdClaim.Value };
-                return Task.FromResult(new ObjectResponse(true, data));
-            }
-            else
-            {
-                return Task.FromResult(new ObjectResponse(false, "Role or UserId not found in token"));
-            }
-        }
-
         public async Task<ObjectResponse> GetUserProfile(string userId)
         {
-            var user = await context.Users.OfType<ApplicationUser>()
-            .Include(u => u.Complaints)
+            var user = await context.ApplicationUsers.OfType<ApplicationUser>()
+            .Include(u => u.Complaints!)
+            .ThenInclude(c => c.ComplaintType!)
+            .Include(u => u.Complaints!)
+            .ThenInclude(c => c.StatusType)
             .FirstOrDefaultAsync(u => u.Id == userId);
+            var userDisplayStruct = new UserGetDTO
+            {
+                Id = user?.Id,
+                FirstName = user?.FirstName,
+                LastName = user?.LastName,
+                Email = user?.Email,
+                Complaints = user?.Complaints?.Select(c => new ComplaintGetDTO
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Type = c.ComplaintType?.Type,
+                    Status = c.StatusType?.Type,
+                    Description = c.Description,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                }).ToList(),
+            };
             if (user == null)
             {
                 return new ObjectResponse(false, "Profile not found");
             }
-            return new ObjectResponse(true, user);
-        }
-
-        public async Task<Test> ConvertToken(string token)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            var claims = jwtToken.Claims.ToDictionary(c => c.Type, c => c.Value);
-            return new Test(true, claims);
+            return new ObjectResponse(true, userDisplayStruct);
         }
 
         public async Task<GeneralResponse> CreateAccount(UserDTO userDTO)
@@ -76,11 +68,15 @@ namespace Complaint_Report_Registering_API.Repositories
             var createUser = await userManager.CreateAsync(newUser!, userDTO.Password);
             if (!createUser.Succeeded)
             {
-                foreach (var error in createUser.Errors)
-                {
-                    Console.Error.WriteLine(error.Description);
-                }
-                return new GeneralResponse(false, "Error occured.. please try again");
+                // foreach (var error in createUser.Errors)
+                // {
+                //     Console.Error.WriteLine(error.Description);
+                // }
+                // return new GeneralResponse(false, "Error occured.. please try again");
+                var errorDescriptions = createUser.Errors.Select(error => error.Description);
+                var errorMessage = string.Join(" ", errorDescriptions);
+                Console.Error.WriteLine(errorMessage);
+                return new GeneralResponse(false, errorMessage);
             }
 
             //Assign Default Role : Admin to first registrar; rest is user
@@ -100,34 +96,6 @@ namespace Complaint_Report_Registering_API.Repositories
                 await userManager.AddToRoleAsync(newUser, "User");
                 return new GeneralResponse(true, "Account Created");
             }
-        }
-
-        public async Task<GeneralResponse> CreateResetToken(MailData mailData)
-        {
-            var user = await userManager.FindByEmailAsync(mailData.EmailToId);
-            if (user == null)
-                return new GeneralResponse(false, "User not found");
-
-            var token = await userManager.GeneratePasswordResetTokenAsync(user);
-
-            mailData.EmailBody = $"Your password reset token is: {token}";
-            var response = await mailService.SendMailAsync(mailData);
-            if (!response)
-            {
-                return new GeneralResponse(false, "Failed to generate reset token");
-            }
-            return new GeneralResponse(true, "Reset token generated");
-        }
-
-        public Task<bool> IsUserLoggedIn(string token)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
-
-            if (jwtToken == null)
-                return Task.FromResult(false);
-
-            return Task.FromResult(jwtToken.ValidTo > DateTime.UtcNow);
         }
 
         public async Task<LoginResponse> LoginAccount(LoginDTO loginDTO)
@@ -157,27 +125,16 @@ namespace Complaint_Report_Registering_API.Repositories
             return new GeneralResponse(true, "Logout successful");
         }
 
-        public async Task<GeneralResponse> ResetPassword(string resetToken, string email, string newPassword)
-        {
-            var getUser = await userManager.FindByEmailAsync(email);
-            if (getUser is null)
-                return new GeneralResponse(false, "User not found");
-            var result = await userManager.ResetPasswordAsync(getUser, resetToken, newPassword);
-            if (!result.Succeeded)
-                return new GeneralResponse(false, "Password reset failed");
-            return new GeneralResponse(true, "Email Successfully send!");
-        }
-
         private string GenerateToken(UserSession user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var userClaims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.FirstName),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.NameIdentifier, user.Id!),
+                new Claim(ClaimTypes.Name, user.FirstName!),
+                new Claim(ClaimTypes.Email, user.Email!),
+                new Claim(ClaimTypes.Role, user.Role!)
             };
             var token = new JwtSecurityToken(
                 issuer: config["Jwt:Issuer"],
@@ -188,5 +145,65 @@ namespace Complaint_Report_Registering_API.Repositories
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        // public Task<ObjectResponse> GetUserData(string token)
+        // {
+        //     var handler = new JwtSecurityTokenHandler();
+        //     var jwtToken = handler.ReadJwtToken(token);
+
+        //     var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+        //     var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        //     if (roleClaim != null && userIdClaim != null)
+        //     {
+        //         var data = new { Role = roleClaim.Value, UserId = userIdClaim.Value };
+        //         return Task.FromResult(new ObjectResponse(true, data));
+        //     }
+        //     else
+        //     {
+        //         return Task.FromResult(new ObjectResponse(false, "Role or UserId not found in token"));
+        //     }
+        // }
+        // public async Task<GeneralResponse> ResetPassword(string resetToken, string email, string newPassword)
+        // {
+        //     var getUser = await userManager.FindByEmailAsync(email);
+        //     if (getUser is null)
+        //         return new GeneralResponse(false, "User not found");
+        //     var result = await userManager.ResetPasswordAsync(getUser, resetToken, newPassword);
+        //     if (!result.Succeeded)
+        //         return new GeneralResponse(false, "Password reset failed");
+        //     return new GeneralResponse(true, "Email Successfully send!");
+        // }
+        // public async Task<Test> ConvertToken(string token)
+        // {
+        //     var handler = new JwtSecurityTokenHandler();
+        //     var jwtToken = handler.ReadJwtToken(token);
+        //     var claims = jwtToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+        //     return new Test(true, claims);
+        // }
+        // public Task<bool> IsUserLoggedIn(string token)
+        // {
+        //     var handler = new JwtSecurityTokenHandler();
+        //     var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+
+        //     if (jwtToken == null)
+        //         return Task.FromResult(false);
+
+        //     return Task.FromResult(jwtToken.ValidTo > DateTime.UtcNow);
+        // }
+        // public async Task<GeneralResponse> CreateResetToken(MailData mailData)
+        // {
+        //     var user = await userManager.FindByEmailAsync(mailData.EmailToId);
+        //     if (user == null)
+        //         return new GeneralResponse(false, "User not found");
+
+        //     var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+        //     mailData.EmailBody = $"Your password reset token is: {token}";
+        //     var response = await mailService.SendMailAsync(mailData);
+        //     if (!response)
+        //     {
+        //         return new GeneralResponse(false, "Failed to generate reset token");
+        //     }
+        //     return new GeneralResponse(true, "Reset token generated");
+        // }
     }
 }

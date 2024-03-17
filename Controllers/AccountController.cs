@@ -3,8 +3,6 @@ using Complaint_Report_Registering_API.DTOs;
 using Complaint_Report_Registering_API.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 
 
 namespace Complaint_Report_Registering_API.Controllers
@@ -56,19 +54,6 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(response);
         }
-        [HttpGet("get-user-data")]
-        [Authorize]
-        public async Task<IActionResult> GetUserData()
-        {
-            var authHeader = HttpContext.Request.Headers.Authorization;
-            var token = authHeader.First()!["Bearer ".Length..].Trim();
-            var response = await account.GetUserData(token);
-            if (response.Flag == false)
-            {
-                return BadRequest(response);
-            }
-            return Ok(response);
-        }
         [HttpGet("get-user-profile/{id}")]
         [Authorize]
         public async Task<IActionResult> GetUserProfile([FromRoute] string id)
@@ -76,10 +61,23 @@ namespace Complaint_Report_Registering_API.Controllers
             var response = await account.GetUserProfile(id);
             if (response.Flag == false)
             {
-                return BadRequest(response);
+                return NotFound(response);
             }
             return Ok(response);
         }
+        // [HttpGet("get-user-data")]
+        // [Authorize]
+        // public async Task<IActionResult> GetUserData()
+        // {
+        //     var authHeader = HttpContext.Request.Headers.Authorization;
+        //     var token = authHeader.First()!["Bearer ".Length..].Trim();
+        //     var response = await account.GetUserData(token);
+        //     if (response.Flag == false)
+        //     {
+        //         return BadRequest(response);
+        //     }
+        //     return Ok(response);
+        // }
         // [HttpGet("convert-token")]
         // [Authorize]
         // public async Task<IActionResult> ConvertToken([FromHeader] string token)

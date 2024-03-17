@@ -12,14 +12,19 @@ namespace Complaint_Report_Registering_API.Entities
         [Required]
         public string? Title { get; set; }
         [Required]
-        public string? Type { get; set; }
-        [Required]
         [StringLength(250)]
         public string? Description { get; set; }
+        public string? FileUrl { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public string? ApplicationUserId { get; set; }
         [JsonIgnore]
         public ApplicationUser? ApplicationUser { get; set; }
+        public Guid? ComplaintTypeId { get; set; }
+        [JsonIgnore]
+        public ComplaintType? ComplaintType { get; set; }
+        public Guid? StatusTypeId { get; set; }
+        [JsonIgnore]
+        public StatusType? StatusType { get; set; }
     }
 }

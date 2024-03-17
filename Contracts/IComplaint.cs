@@ -6,10 +6,12 @@ namespace Complaint_Report_Registering_API.Contracts
 {
     public interface IComplaint
     {
-        Task<ArrayResponse> ViewAllComplaint();
+        Task<ListResponse> ViewAllComplaint();
         Task<ObjectResponse> ViewComplaint(string id);
-        Task<GeneralResponse> RegsiterComplaint(Complaint complaint);
+        Task<GeneralResponse> RegsiterComplaint(ComplaintPostDTO complaintPostDTO, string userId);
         Task<GeneralResponse> EditComplaint(string id, ComplaintPostDTO complaint);
         Task<GeneralResponse> DeleteComplaint(string id);
+        Task<GeneralResponse> AddComplaintType(string typeName);
+        Task<GeneralResponse> AddStatusType(string typeName);
     }
 }

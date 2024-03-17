@@ -5,18 +5,19 @@
 namespace Complaint_Report_Registering_API.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateUser : Migration
+    public partial class AddImageAndFileUrl : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "Name",
-                table: "AspNetUsers",
-                newName: "LastName");
+            migrationBuilder.AddColumn<string>(
+                name: "FileUrl",
+                table: "Complaints",
+                type: "text",
+                nullable: true);
 
             migrationBuilder.AddColumn<string>(
-                name: "FirstName",
+                name: "ImageUrl",
                 table: "AspNetUsers",
                 type: "text",
                 nullable: true);
@@ -26,13 +27,12 @@ namespace Complaint_Report_Registering_API.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "FirstName",
-                table: "AspNetUsers");
+                name: "FileUrl",
+                table: "Complaints");
 
-            migrationBuilder.RenameColumn(
-                name: "LastName",
-                table: "AspNetUsers",
-                newName: "Name");
+            migrationBuilder.DropColumn(
+                name: "ImageUrl",
+                table: "AspNetUsers");
         }
     }
 }

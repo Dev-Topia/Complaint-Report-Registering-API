@@ -31,6 +31,9 @@ namespace Complaint_Report_Registering_API.Migrations
                     b.Property<string>("ApplicationUserId")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("ComplaintTypeId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -39,11 +42,13 @@ namespace Complaint_Report_Registering_API.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
+                    b.Property<string>("FileUrl")
                         .HasColumnType("text");
 
-                    b.Property<string>("Type")
+                    b.Property<Guid?>("StatusTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -54,23 +59,41 @@ namespace Complaint_Report_Registering_API.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
+                    b.HasIndex("ComplaintTypeId");
+
+                    b.HasIndex("StatusTypeId");
+
                     b.ToTable("Complaints");
                 });
 
-            modelBuilder.Entity("Complaint_Report_Registering_API.Entities.Post", b =>
+            modelBuilder.Entity("Complaint_Report_Registering_API.Entities.ComplaintType", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("Content")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Description")
+                    b.Property<string>("Type")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Posts");
+                    b.ToTable("ComplaintTypes");
+                });
+
+            modelBuilder.Entity("Complaint_Report_Registering_API.Entities.StatusType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StatusTypes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -285,6 +308,9 @@ namespace Complaint_Report_Registering_API.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
 
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
                     b.Property<string>("LastName")
                         .HasColumnType("text");
 
@@ -297,7 +323,19 @@ namespace Complaint_Report_Registering_API.Migrations
                         .WithMany("Complaints")
                         .HasForeignKey("ApplicationUserId");
 
+                    b.HasOne("Complaint_Report_Registering_API.Entities.ComplaintType", "ComplaintType")
+                        .WithMany("Complaints")
+                        .HasForeignKey("ComplaintTypeId");
+
+                    b.HasOne("Complaint_Report_Registering_API.Entities.StatusType", "StatusType")
+                        .WithMany("Complaints")
+                        .HasForeignKey("StatusTypeId");
+
                     b.Navigation("ApplicationUser");
+
+                    b.Navigation("ComplaintType");
+
+                    b.Navigation("StatusType");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -349,6 +387,16 @@ namespace Complaint_Report_Registering_API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Complaint_Report_Registering_API.Entities.ComplaintType", b =>
+                {
+                    b.Navigation("Complaints");
+                });
+
+            modelBuilder.Entity("Complaint_Report_Registering_API.Entities.StatusType", b =>
+                {
+                    b.Navigation("Complaints");
                 });
 
             modelBuilder.Entity("Complaint_Report_Registering_API.Data.ApplicationUser", b =>

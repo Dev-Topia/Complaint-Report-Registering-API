@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.DTOs;
-using Complaint_Report_Registering_API.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +12,7 @@ namespace Complaint_Report_Registering_API.Controllers
     {
         [HttpGet("get-all-complaint")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ComplaintGetDTO>> GetAllComplaint()
+        public async Task<ActionResult> GetAllComplaint()
         {
             var response = await complaint.ViewAllComplaint();
             return Ok(response);
@@ -25,27 +24,16 @@ namespace Complaint_Report_Registering_API.Controllers
             var response = await complaint.ViewComplaint(id);
             if (response.Flag == false)
             {
-                return BadRequest(response);
+                return NotFound(response);
             }
             return Ok(response);
         }
-
         [HttpPost("register-complaint")]
         [Authorize]
         public async Task<IActionResult> RegisterComplaint([FromBody] ComplaintPostDTO complaintPostDTO)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var newComplaint = new Complaint
-            {
-                Id = Guid.NewGuid(),
-                Title = complaintPostDTO.Title,
-                Type = complaintPostDTO.Type,
-                Description = complaintPostDTO.Description,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                ApplicationUserId = userId,
-            };
-            var response = await complaint.RegsiterComplaint(newComplaint);
+            var response = await complaint.RegsiterComplaint(complaintPostDTO, userId!);
             if (response.Flag == false)
             {
                 return BadRequest(response);
@@ -59,7 +47,7 @@ namespace Complaint_Report_Registering_API.Controllers
             var response = await complaint.EditComplaint(id, complaintPostDTO);
             if (response.Flag == false)
             {
-                return BadRequest(response);
+                return NotFound(response);
             }
             return Ok(response);
         }
@@ -68,6 +56,28 @@ namespace Complaint_Report_Registering_API.Controllers
         public async Task<IActionResult> DeleteComplaint([FromRoute] string id)
         {
             var response = await complaint.DeleteComplaint(id);
+            if (response.Flag == false)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
+        }
+        [HttpPost("add-complaint-type")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddComplaintType([FromBody] string typeName)
+        {
+            var response = await complaint.AddComplaintType(typeName);
+            if (response.Flag == false)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+        [HttpPost("add-status-type")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddStatusType([FromBody] string typeName)
+        {
+            var response = await complaint.AddStatusType(typeName);
             if (response.Flag == false)
             {
                 return BadRequest(response);
