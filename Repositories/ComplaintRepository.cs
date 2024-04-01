@@ -77,7 +77,7 @@ namespace Complaint_Report_Registering_API.Repositories
                 Id = Guid.NewGuid(),
                 Title = complaintPostDTO.Title,
                 ComplaintTypeId = complaintPostDTO.ComplaintTypeId,
-                StatusTypeId = complaintPostDTO.StatusTypeId,
+                StatusTypeId = Guid.Parse("b9cc23e0-d5c8-43fc-adad-58ccecd926bc"),
                 Description = complaintPostDTO.Description,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -111,7 +111,7 @@ namespace Complaint_Report_Registering_API.Repositories
             }
             complaint.Title = updatedComplaint.Title;
             complaint.ComplaintTypeId = updatedComplaint.ComplaintTypeId;
-            complaint.StatusTypeId = updatedComplaint.StatusTypeId;
+            // complaint.StatusTypeId = updatedComplaint.StatusTypeId;
             complaint.Description = updatedComplaint.Description;
             complaint.UpdatedAt = DateTime.UtcNow;
             context.Complaints.Update(complaint);

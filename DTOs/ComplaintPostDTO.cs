@@ -8,8 +8,8 @@ namespace Complaint_Report_Registering_API.DTOs
         public string? Title { get; set; }
         [Required]
         public Guid? ComplaintTypeId { get; set; }
-        [Required]
-        public Guid? StatusTypeId { get; set; }
+        // [Required]
+        // public Guid? StatusTypeId { get; set; }
         [Required]
         [StringLength(250)]
         public string? Description { get; set; }
