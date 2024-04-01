@@ -77,7 +77,7 @@ namespace Complaint_Report_Registering_API.Repositories
                 Id = Guid.NewGuid(),
                 Title = complaintPostDTO.Title,
                 ComplaintTypeId = complaintPostDTO.ComplaintTypeId,
-                StatusTypeId = Guid.Parse("b9cc23e0-d5c8-43fc-adad-58ccecd926bc"),
+                StatusTypeId = Guid.Parse("bb07beff-74ed-4094-a1b5-aa8476ac9a77"),
                 Description = complaintPostDTO.Description,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
