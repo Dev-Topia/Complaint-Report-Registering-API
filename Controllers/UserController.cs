@@ -1,7 +1,6 @@
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.DTOs.PostDTOs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic;
 
 namespace Complaint_Report_Registering_API.Controllers
 {

@@ -130,6 +130,7 @@ namespace Complaint_Report_Registering_API.Repositories
                 ComplaintType = complaint.ComplaintType?.Type,
                 Status = complaint.Status?.Type,
                 Description = complaint.Description,
+                FileUrl = complaint.FileUrl,
                 CreatedAt = complaint.CreatedAt,
                 UpdatedAt = complaint.UpdatedAt,
                 User = new ProfileDTO
@@ -157,6 +158,7 @@ namespace Complaint_Report_Registering_API.Repositories
                 ComplaintType = c.ComplaintType?.Type,
                 Status = c.Status?.Type,
                 Description = c.Description,
+                FileUrl = c.FileUrl,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
                 User = new ProfileDTO

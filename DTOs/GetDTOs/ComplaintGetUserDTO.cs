@@ -1,6 +1,6 @@
-namespace Complaint_Report_Registering_API.DTOs
+namespace Complaint_Report_Registering_API.DTOs.GetDTOs
 {
-    public class ComplaintGetDTO
+    public class ComplaintGetUserDTO
     {
         public int ComplaintId { get; set; }
         public string? Title { get; set; }
@@ -10,6 +10,5 @@ namespace Complaint_Report_Registering_API.DTOs
         public string? FileUrl { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public ProfileDTO? User { get; set; }
     }
 }

@@ -102,20 +102,46 @@ namespace Complaint_Report_Registering_API.Repositories
                 FirstName = user?.FirstName,
                 LastName = user?.LastName,
                 Email = user?.Email,
+                Complaints = user?.Complaints!.Select(c => new ComplaintGetUserDTO
+                {
+                    ComplaintId = c.ComplaintId,
+                    Title = c.Title,
+                    ComplaintType = c.ComplaintType?.Type,
+                    Status = c.Status?.Type,
+                    Description = c.Description,
+                    FileUrl = c.FileUrl,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                }).ToList()
             };
             return userToDisplay;
         }
 
         public async Task<List<UserGetDTO>> ViewUsers()
         {
-            var users = await context.ApplicationUsers.ToListAsync();
-
+            var users = await context.ApplicationUsers
+                .Include(u => u.Complaints!)
+                .ThenInclude(c => c.ComplaintType)
+                .Include(u => u.Complaints!)
+                .ThenInclude(c => c.Status)
+                .ToListAsync();
             var usersToDisplay = users.Select(u => new UserGetDTO
             {
                 UserId = u.Id,
                 FirstName = u.FirstName,
                 LastName = u.LastName,
                 Email = u.Email,
+                Complaints = u.Complaints!.Select(c => new ComplaintGetUserDTO
+                {
+                    ComplaintId = c.ComplaintId,
+                    Title = c.Title,
+                    ComplaintType = c.ComplaintType?.Type,
+                    Status = c.Status?.Type,
+                    Description = c.Description,
+                    FileUrl = c.FileUrl,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                }).ToList()
             }).ToList();
             return usersToDisplay;
         }
