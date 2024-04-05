@@ -1,13 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Complaint_Report_Registering_API.DTOs
+namespace Complaint_Report_Registering_API.DTOs.PostDTOs
 {
-    public class UserDTO
+    public class SignUpDTO
     {
         [Required]
-        public string FirstName { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
         [Required]
-        public string LastName { get; set; } = string.Empty;
+        public string? Lastname { get; set; }
         [Required]
         [EmailAddress]
         [DataType(DataType.EmailAddress)]

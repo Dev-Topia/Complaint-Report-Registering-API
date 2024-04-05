@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.DTOs;
+using Complaint_Report_Registering_API.DTOs.PostDTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,77 +13,75 @@ namespace Complaint_Report_Registering_API.Controllers
     {
         [HttpGet("get-all-complaint")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> GetAllComplaint()
+        public async Task<ActionResult> GetComplaints()
         {
-            var response = await complaint.ViewAllComplaint();
-            return Ok(response);
+            var response = await complaint.ViewComplaints();
+            return Ok(new { data = response });
         }
-        [HttpGet("get-single-complaint/{id}")]
+        [HttpGet("get-single-complaint/{complaintId}")]
         [Authorize]
-        public async Task<IActionResult> GetSingleComplaint([FromRoute] string id)
+        public async Task<IActionResult> GetComplaint([FromRoute] int complaintId)
         {
-            var response = await complaint.ViewComplaint(id);
-            if (response.Flag == false)
+            var response = await complaint.ViewComplaint(complaintId);
+            if (response.ComplaintId == 0)
             {
-                return NotFound(response);
+                return NotFound(new { msg = "Complaint not found" });
             }
-            return Ok(response);
+            return Ok(new { data = response });
         }
         [HttpPost("register-complaint")]
         [Authorize]
-        public async Task<IActionResult> RegisterComplaint([FromBody] ComplaintPostDTO complaintPostDTO)
+        public async Task<IActionResult> PostComplaint([FromBody] ComplaintPostDTO complaintPostDTO)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var response = await complaint.RegsiterComplaint(complaintPostDTO, userId!);
-            if (response.Flag == false)
+            var response = await complaint.CreateComplaint(complaintPostDTO, userId!);
+            if (response == false)
             {
-                return BadRequest(response);
+                return BadRequest(new { msg = "Something went wrong" });
             }
-            return Ok(response);
+            return Ok(new { msg = "Complaint successfully created" });
         }
-        [HttpPut("update-complaint/{id}")]
+        [HttpPut("update-complaint/{complaintId}")]
         [Authorize]
-        public async Task<IActionResult> UpdateComplaint([FromRoute] string id, [FromBody] ComplaintPostDTO complaintPostDTO)
+        public async Task<IActionResult> PutComplaint([FromRoute] int complaintId, [FromBody] ComplaintPostDTO complaintPostDTO)
         {
-            var response = await complaint.EditComplaint(id, complaintPostDTO);
-            if (response.Flag == false)
+            var findComplaint = await complaint.FindComplaint(complaintId);
+            if (!findComplaint) return NotFound(new { msg = "Complaint not found" });
+            var response = await complaint.EditComplaint(complaintPostDTO, complaintId);
+            if (!response)
             {
-                return NotFound(response);
+                return BadRequest(new { msg = "Something went wrong" });
             }
-            return Ok(response);
+            return Ok(new { mgs = "Complaint updated successfully" });
         }
-        [HttpDelete("delete-complaint/{id}")]
+        [HttpDelete("delete-complaint/{complaintId}")]
         [Authorize]
-        public async Task<IActionResult> DeleteComplaint([FromRoute] string id)
+        public async Task<IActionResult> DeleteComplaint([FromRoute] int complaintId)
         {
-            var response = await complaint.DeleteComplaint(id);
-            if (response.Flag == false)
+            var findComplaint = await complaint.FindComplaint(complaintId);
+            if (!findComplaint) return NotFound(new { msg = "Complaint not found" });
+            var response = await complaint.RemoveComplaint(complaintId);
+            if (!response)
             {
-                return NotFound(response);
+                return BadRequest(new { msg = "Something went wrong" });
             }
-            return Ok(response);
+            return Ok(new { mgs = "Complaint deleted successfully" });
         }
         [HttpPost("add-complaint-type")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddComplaintType([FromBody] string typeName)
+        public async Task<IActionResult> AddComplaintType([FromBody] ComplaintTypePostDTO complaintType)
         {
-            var response = await complaint.AddComplaintType(typeName);
-            if (response.Flag == false)
-            {
-                return BadRequest(response);
-            }
-            return Ok(response);
+            var response = await complaint.AddComplaintType(complaintType);
+            if (!response) return BadRequest(new { msg = "Complaint Type is already exist" });
+            return Ok(new { msg = "Complaint type added successfully" });
         }
         [HttpPost("add-status-type")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddStatusType([FromBody] string typeName)
+        public async Task<IActionResult> AddStatus([FromBody] StatusPostDTO status)
         {
-            var response = await complaint.AddStatusType(typeName);
-            if (response.Flag == false)
-            {
-                return BadRequest(response);
-            }
-            return Ok(response);
+            var response = await complaint.AddStatus(status);
+            if (!response) return BadRequest(new { msg = "Status is already exist" });
+            return Ok(new { msg = "Status added successfully" });
         }
     }
 }

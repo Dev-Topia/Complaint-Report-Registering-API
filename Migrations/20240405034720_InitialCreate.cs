@@ -34,6 +34,7 @@ namespace Complaint_Report_Registering_API.Migrations
                     Discriminator = table.Column<string>(type: "character varying(21)", maxLength: 21, nullable: false),
                     FirstName = table.Column<string>(type: "text", nullable: true),
                     LastName = table.Column<string>(type: "text", nullable: true),
+                    ImageUrl = table.Column<string>(type: "text", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -58,24 +59,26 @@ namespace Complaint_Report_Registering_API.Migrations
                 name: "ComplaintTypes",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ComplaintTypeId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Type = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ComplaintTypes", x => x.Id);
+                    table.PrimaryKey("PK_ComplaintTypes", x => x.ComplaintTypeId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "StatusTypes",
+                name: "Status",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StatusId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Type = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StatusTypes", x => x.Id);
+                    table.PrimaryKey("PK_Status", x => x.StatusId);
                 });
 
             migrationBuilder.CreateTable(
@@ -188,18 +191,20 @@ namespace Complaint_Report_Registering_API.Migrations
                 name: "Complaints",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ComplaintId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    FileUrl = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ApplicationUserId = table.Column<string>(type: "text", nullable: true),
-                    ComplaintTypeId = table.Column<Guid>(type: "uuid", nullable: true),
-                    StatusTypeId = table.Column<Guid>(type: "uuid", nullable: true)
+                    ComplaintTypeId = table.Column<int>(type: "integer", nullable: false),
+                    StatusId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Complaints", x => x.Id);
+                    table.PrimaryKey("PK_Complaints", x => x.ComplaintId);
                     table.ForeignKey(
                         name: "FK_Complaints_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
@@ -209,12 +214,14 @@ namespace Complaint_Report_Registering_API.Migrations
                         name: "FK_Complaints_ComplaintTypes_ComplaintTypeId",
                         column: x => x.ComplaintTypeId,
                         principalTable: "ComplaintTypes",
-                        principalColumn: "Id");
+                        principalColumn: "ComplaintTypeId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Complaints_StatusTypes_StatusTypeId",
-                        column: x => x.StatusTypeId,
-                        principalTable: "StatusTypes",
-                        principalColumn: "Id");
+                        name: "FK_Complaints_Status_StatusId",
+                        column: x => x.StatusId,
+                        principalTable: "Status",
+                        principalColumn: "StatusId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -265,9 +272,9 @@ namespace Complaint_Report_Registering_API.Migrations
                 column: "ComplaintTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Complaints_StatusTypeId",
+                name: "IX_Complaints_StatusId",
                 table: "Complaints",
-                column: "StatusTypeId");
+                column: "StatusId");
         }
 
         /// <inheritdoc />
@@ -301,7 +308,7 @@ namespace Complaint_Report_Registering_API.Migrations
                 name: "ComplaintTypes");
 
             migrationBuilder.DropTable(
-                name: "StatusTypes");
+                name: "Status");
         }
     }
 }

@@ -7,9 +7,7 @@ namespace Complaint_Report_Registering_API.DTOs
         [Required]
         public string? Title { get; set; }
         [Required]
-        public Guid? ComplaintTypeId { get; set; }
-        // [Required]
-        // public Guid? StatusTypeId { get; set; }
+        public int ComplaintTypeId { get; set; }
         [Required]
         [StringLength(250)]
         public string? Description { get; set; }

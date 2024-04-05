@@ -6,7 +6,7 @@ namespace Complaint_Report_Registering_API.Entities
     {
         [Key]
         [Required]
-        public Guid Id { get; set; }
+        public int ComplaintTypeId { get; set; }
         [Required]
         public string? Type { get; set; }
         public List<Complaint>? Complaints { get; set; }

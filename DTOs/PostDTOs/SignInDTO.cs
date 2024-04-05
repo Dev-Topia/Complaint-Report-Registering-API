@@ -1,15 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Complaint_Report_Registering_API.DTOs
+namespace Complaint_Report_Registering_API.DTOs.PostDTOs
 {
-    public class LoginDTO
+    public class SignInDTO
     {
         [Required]
         [EmailAddress]
         [DataType(DataType.EmailAddress)]
-        public string Email { get; set; } = string.Empty;
+        public string? Email { get; set; }
         [Required]
         [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
+        public string? Password { get; set; }
     }
 }

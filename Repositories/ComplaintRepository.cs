@@ -1,146 +1,173 @@
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.Data;
 using Complaint_Report_Registering_API.DTOs;
+using Complaint_Report_Registering_API.DTOs.PostDTOs;
 using Complaint_Report_Registering_API.Entities;
 using Microsoft.EntityFrameworkCore;
-using static Complaint_Report_Registering_API.DTOs.ServiceResponses;
 
 namespace Complaint_Report_Registering_API.Repositories
 {
     public class ComplaintRepository(AppDbContext context) : IComplaint
     {
-        public async Task<ListResponse> ViewAllComplaint()
+        public async Task<bool> AddComplaintType(ComplaintTypePostDTO complaintType)
         {
-            var complaints = await context.Complaints
-            .Include(c => c.ComplaintType)
-            .Include(c => c.StatusType)
-            .Include(c => c.ApplicationUser)
-            .ToListAsync();
-
-            var complaintGetDTOs = complaints.Select(c => new ComplaintGetDTO
+            var findComplaintType = await context.ComplaintTypes
+            .FirstOrDefaultAsync(ct => ct.Type == complaintType.ComplaintType);
+            if (findComplaintType != null)
             {
-                Id = c.Id,
-                Title = c.Title,
-                Type = c.ComplaintType?.Type,
-                Status = c.StatusType?.Type,
-                Description = c.Description,
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt,
-                User = new ProfileDTO
-                {
-                    Id = c.ApplicationUser?.Id,
-                    FirstName = c.ApplicationUser?.FirstName,
-                    LastName = c.ApplicationUser?.LastName,
-                    Email = c.ApplicationUser?.Email
-                }
-            }).ToList();
-
-            return new ListResponse(true, complaintGetDTOs);
+                return false;
+            }
+            context.ComplaintTypes.Add(new ComplaintType
+            {
+                Type = complaintType.ComplaintType,
+            });
+            await context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task<ObjectResponse> ViewComplaint(string id)
+        public async Task<bool> AddStatus(StatusPostDTO status)
+        {
+            var findStatus = await context.Status
+            .FirstOrDefaultAsync(s => s.Type == status.Status);
+            if (findStatus != null)
+            {
+                return false;
+            }
+            context.Status.Add(new Status
+            {
+                Type = status.Status,
+            });
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> CreateComplaint(ComplaintPostDTO complaint, string userId)
+        {
+            var newComplaint = new Complaint
+            {
+                Title = complaint.Title,
+                ComplaintTypeId = complaint.ComplaintTypeId,
+                StatusId = 1,
+                Description = complaint.Description,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                ApplicationUserId = userId,
+                FileUrl = complaint.FileUrl,
+            };
+            context.Complaints.Add(newComplaint);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> EditComplaint(ComplaintPostDTO complaint, int complaintId)
+        {
+            try
+            {
+                var complaintToUpdate = await context.Complaints.FindAsync(complaintId);
+                if (complaintToUpdate == null)
+                {
+                    return false;
+                }
+                complaintToUpdate.Title = complaint.Title;
+                complaintToUpdate.ComplaintTypeId = complaint.ComplaintTypeId;
+                complaintToUpdate.StatusId = 1;
+                complaintToUpdate.Description = complaint.Description;
+                complaintToUpdate.FileUrl = complaint.FileUrl;
+                complaintToUpdate.UpdatedAt = DateTime.UtcNow;
+                context.Complaints.Update(complaintToUpdate);
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
+
+        public async Task<bool> RemoveComplaint(int complaintId)
+        {
+            try
+            {
+                var complaint = await context.Complaints.FindAsync(complaintId);
+                if (complaint == null)
+                {
+                    return false;
+                }
+                context.Complaints.Remove(complaint);
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
+
+        public async Task<bool> FindComplaint(int complaintId)
+        {
+            var complaint = await context.Complaints.FindAsync(complaintId);
+            if (complaint == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<ComplaintGetDTO> ViewComplaint(int complaintId)
         {
             var complaint = await context.Complaints
             .Include(c => c.ComplaintType)
-            .Include(c => c.StatusType)
+            .Include(c => c.Status)
             .Include(c => c.ApplicationUser)
-            .FirstOrDefaultAsync(c => c.Id == new Guid(id));
-            if (complaint == null)
+            .FirstOrDefaultAsync(c => c.ComplaintId == complaintId);
+            if (complaint == null) return new ComplaintGetDTO { };
+            var complaintToDisplay = new ComplaintGetDTO
             {
-                return new ObjectResponse(false, "Complaints not found");
-            }
-            var complaintGetDTO = new ComplaintGetDTO
-            {
-                Id = complaint.Id,
-                Title = complaint.Title,
-                Type = complaint.ComplaintType?.Type,
-                Status = complaint.StatusType?.Type,
+                ComplaintId = complaint!.ComplaintId,
+                Title = complaint!.Title,
+                ComplaintType = complaint.ComplaintType?.Type,
+                Status = complaint.Status?.Type,
                 Description = complaint.Description,
                 CreatedAt = complaint.CreatedAt,
                 UpdatedAt = complaint.UpdatedAt,
                 User = new ProfileDTO
                 {
-                    Id = complaint.ApplicationUser?.Id,
+                    UserId = complaint.ApplicationUser?.Id,
                     FirstName = complaint.ApplicationUser?.FirstName,
                     LastName = complaint.ApplicationUser?.LastName,
-                    Email = complaint.ApplicationUser?.Email
+                    Email = complaint.ApplicationUser?.Email,
                 }
             };
-            return new ObjectResponse(true, complaintGetDTO);
+            return complaintToDisplay;
         }
 
-        public async Task<GeneralResponse> RegsiterComplaint(ComplaintPostDTO complaintPostDTO, string userId)
+        public async Task<List<ComplaintGetDTO>> ViewComplaints()
         {
-            if (complaintPostDTO is null) return new GeneralResponse(false, "Model is empty!");
-            var newComplaint = new Complaint
+            var complaints = await context.Complaints
+            .Include(c => c.ComplaintType)
+            .Include(c => c.Status)
+            .Include(c => c.ApplicationUser)
+            .ToListAsync();
+            var complaintsToDisplay = complaints.Select(c => new ComplaintGetDTO
             {
-                Id = Guid.NewGuid(),
-                Title = complaintPostDTO.Title,
-                ComplaintTypeId = complaintPostDTO.ComplaintTypeId,
-                StatusTypeId = Guid.Parse("bb07beff-74ed-4094-a1b5-aa8476ac9a77"),
-                Description = complaintPostDTO.Description,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                ApplicationUserId = userId,
-                FileUrl = complaintPostDTO.FileUrl,
-            };
-            context.Complaints.Add(newComplaint);
-            await context.SaveChangesAsync();
-            return new GeneralResponse(true, "Register Successfully!");
-        }
-
-        public async Task<GeneralResponse> DeleteComplaint(string id)
-        {
-            var complaint = await context.Complaints.FindAsync(new Guid(id));
-            if (complaint == null)
-            {
-                return new GeneralResponse(false, "Complaints not found!");
-            }
-            context.Complaints.Remove(complaint);
-            await context.SaveChangesAsync();
-
-            return new GeneralResponse(true, "Complaints deleted successfully!");
-        }
-
-        public async Task<GeneralResponse> EditComplaint(string id, ComplaintPostDTO updatedComplaint)
-        {
-            var complaint = await context.Complaints.FindAsync(new Guid(id));
-            if (complaint == null)
-            {
-                return new GeneralResponse(false, "Complaints not found!");
-            }
-            complaint.Title = updatedComplaint.Title;
-            complaint.ComplaintTypeId = updatedComplaint.ComplaintTypeId;
-            // complaint.StatusTypeId = updatedComplaint.StatusTypeId;
-            complaint.Description = updatedComplaint.Description;
-            complaint.UpdatedAt = DateTime.UtcNow;
-            context.Complaints.Update(complaint);
-            await context.SaveChangesAsync();
-            return new GeneralResponse(true, "Complaints updated successfully");
-        }
-
-        public async Task<GeneralResponse> AddComplaintType(string typeName)
-        {
-            var newComplaintType = new ComplaintType
-            {
-                Id = Guid.NewGuid(),
-                Type = typeName,
-            };
-            context.ComplaintTypes.Add(newComplaintType);
-            await context.SaveChangesAsync();
-            return new GeneralResponse(true, "Complaint Type Added Successfully!");
-        }
-
-        public async Task<GeneralResponse> AddStatusType(string typeName)
-        {
-            var newStatusType = new StatusType
-            {
-                Id = Guid.NewGuid(),
-                Type = typeName
-            };
-            context.StatusTypes.Add(newStatusType);
-            await context.SaveChangesAsync();
-            return new GeneralResponse(true, "Status Type Added Successfully!");
+                ComplaintId = c.ComplaintId,
+                Title = c.Title,
+                ComplaintType = c.ComplaintType?.Type,
+                Status = c.Status?.Type,
+                Description = c.Description,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt,
+                User = new ProfileDTO
+                {
+                    UserId = c.ApplicationUser?.Id,
+                    FirstName = c.ApplicationUser?.FirstName,
+                    LastName = c.ApplicationUser?.LastName,
+                    Email = c.ApplicationUser?.Email,
+                }
+            }).ToList();
+            return complaintsToDisplay;
         }
     }
 }

@@ -56,8 +56,8 @@ builder.Services.AddSwaggerGen(options =>
     });
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
-builder.Services.AddScoped<IAccount, AccountRepository>();
 builder.Services.AddScoped<IComplaint, ComplaintRepository>();
+builder.Services.AddScoped<IUser, UserRepository>();
 
 builder.Services.Configure<MailSetting>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddTransient<IMailService, MailService>();

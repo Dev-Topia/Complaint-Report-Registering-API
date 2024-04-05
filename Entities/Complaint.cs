@@ -8,7 +8,7 @@ namespace Complaint_Report_Registering_API.Entities
     {
         [Key]
         [Required]
-        public Guid Id { get; set; }
+        public int ComplaintId { get; set; }
         [Required]
         public string? Title { get; set; }
         [Required]
@@ -20,11 +20,11 @@ namespace Complaint_Report_Registering_API.Entities
         public string? ApplicationUserId { get; set; }
         [JsonIgnore]
         public ApplicationUser? ApplicationUser { get; set; }
-        public Guid? ComplaintTypeId { get; set; }
+        public int ComplaintTypeId { get; set; }
         [JsonIgnore]
         public ComplaintType? ComplaintType { get; set; }
-        public Guid? StatusTypeId { get; set; }
+        public int StatusId { get; set; }
         [JsonIgnore]
-        public StatusType? StatusType { get; set; }
+        public Status? Status { get; set; }
     }
 }

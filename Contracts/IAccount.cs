@@ -6,9 +6,9 @@ namespace Complaint_Report_Registering_API.Contracts
 {
     public interface IAccount
     {
-        Task<GeneralResponse> CreateAccount(UserDTO userDTO);
-        Task<LoginResponse> LoginAccount(LoginDTO loginDTO);
-        Task<GeneralResponse> LogoutAccount();
-        Task<ObjectResponse> GetUserProfile(string userId);
+        // Task<GeneralResponse> CreateAccount(UserDTO userDTO);
+        // Task<LoginResponse> LoginAccount(LoginDTO loginDTO);
+        // Task<GeneralResponse> LogoutAccount();
+        // Task<ObjectResponse> GetUserProfile(string userId);
     }
 }

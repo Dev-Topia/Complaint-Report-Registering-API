@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Complaint_Report_Registering_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240317032307_AddImageAndFileUrl")]
-    partial class AddImageAndFileUrl
+    [Migration("20240405034720_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,15 +27,17 @@ namespace Complaint_Report_Registering_API.Migrations
 
             modelBuilder.Entity("Complaint_Report_Registering_API.Entities.Complaint", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("ComplaintId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ComplaintId"));
 
                     b.Property<string>("ApplicationUserId")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ComplaintTypeId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("ComplaintTypeId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -48,8 +50,8 @@ namespace Complaint_Report_Registering_API.Migrations
                     b.Property<string>("FileUrl")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("StatusTypeId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -58,45 +60,49 @@ namespace Complaint_Report_Registering_API.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                    b.HasKey("ComplaintId");
 
                     b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("ComplaintTypeId");
 
-                    b.HasIndex("StatusTypeId");
+                    b.HasIndex("StatusId");
 
                     b.ToTable("Complaints");
                 });
 
             modelBuilder.Entity("Complaint_Report_Registering_API.Entities.ComplaintType", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("ComplaintTypeId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ComplaintTypeId"));
 
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("ComplaintTypeId");
 
                     b.ToTable("ComplaintTypes");
                 });
 
-            modelBuilder.Entity("Complaint_Report_Registering_API.Entities.StatusType", b =>
+            modelBuilder.Entity("Complaint_Report_Registering_API.Entities.Status", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("StatusId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StatusId"));
 
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("StatusId");
 
-                    b.ToTable("StatusTypes");
+                    b.ToTable("Status");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -328,17 +334,21 @@ namespace Complaint_Report_Registering_API.Migrations
 
                     b.HasOne("Complaint_Report_Registering_API.Entities.ComplaintType", "ComplaintType")
                         .WithMany("Complaints")
-                        .HasForeignKey("ComplaintTypeId");
+                        .HasForeignKey("ComplaintTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("Complaint_Report_Registering_API.Entities.StatusType", "StatusType")
+                    b.HasOne("Complaint_Report_Registering_API.Entities.Status", "Status")
                         .WithMany("Complaints")
-                        .HasForeignKey("StatusTypeId");
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ApplicationUser");
 
                     b.Navigation("ComplaintType");
 
-                    b.Navigation("StatusType");
+                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -397,7 +407,7 @@ namespace Complaint_Report_Registering_API.Migrations
                     b.Navigation("Complaints");
                 });
 
-            modelBuilder.Entity("Complaint_Report_Registering_API.Entities.StatusType", b =>
+            modelBuilder.Entity("Complaint_Report_Registering_API.Entities.Status", b =>
                 {
                     b.Navigation("Complaints");
                 });
