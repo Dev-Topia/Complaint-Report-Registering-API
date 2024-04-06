@@ -96,12 +96,14 @@ namespace Complaint_Report_Registering_API.Repositories
                 .Include(u => u.Complaints!)
                 .ThenInclude(c => c.Status)
                 .FirstOrDefaultAsync(u => u.Id == userId);
+            var role = await userManager.GetRolesAsync(user!);
             var userToDisplay = new UserGetDTO
             {
                 UserId = user?.Id,
                 FirstName = user?.FirstName,
                 LastName = user?.LastName,
                 Email = user?.Email,
+                Role = [.. role],
                 Complaints = user?.Complaints!.Select(c => new ComplaintGetUserDTO
                 {
                     ComplaintId = c.ComplaintId,
@@ -125,24 +127,34 @@ namespace Complaint_Report_Registering_API.Repositories
                 .Include(u => u.Complaints!)
                 .ThenInclude(c => c.Status)
                 .ToListAsync();
-            var usersToDisplay = users.Select(u => new UserGetDTO
+
+            var usersToDisplay = new List<UserGetDTO>();
+
+            foreach (var user in users)
             {
-                UserId = u.Id,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                Email = u.Email,
-                Complaints = u.Complaints!.Select(c => new ComplaintGetUserDTO
+                var role = await userManager.GetRolesAsync(user);
+                var userDto = new UserGetDTO
                 {
-                    ComplaintId = c.ComplaintId,
-                    Title = c.Title,
-                    ComplaintType = c.ComplaintType?.Type,
-                    Status = c.Status?.Type,
-                    Description = c.Description,
-                    FileUrl = c.FileUrl,
-                    CreatedAt = c.CreatedAt,
-                    UpdatedAt = c.UpdatedAt,
-                }).ToList()
-            }).ToList();
+                    UserId = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Role = [.. role],
+                    Complaints = user.Complaints!.Select(c => new ComplaintGetUserDTO
+                    {
+                        ComplaintId = c.ComplaintId,
+                        Title = c.Title,
+                        ComplaintType = c.ComplaintType?.Type,
+                        Status = c.Status?.Type,
+                        Description = c.Description,
+                        FileUrl = c.FileUrl,
+                        CreatedAt = c.CreatedAt,
+                        UpdatedAt = c.UpdatedAt,
+                    }).ToList()
+                };
+                usersToDisplay.Add(userDto);
+            }
+
             return usersToDisplay;
         }
 
