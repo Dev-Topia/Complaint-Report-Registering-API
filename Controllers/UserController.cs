@@ -14,8 +14,8 @@ namespace Complaint_Report_Registering_API.Controllers
             var findUser = await user.FindUserByEmail(newUser.Email);
             if (findUser) return BadRequest(new { msg = "User already exist" });
             var response = await user.SignUp(newUser);
-            if (!response) return BadRequest(new { msg = "Something went wrong" });
-            return Ok(new { msg = "Successfully created" });
+            if (!response.Flag) return BadRequest(new { msg = response.Msg });
+            return Ok(new { msg = response.Msg });
         }
         [HttpPost("sign-in")]
         public async Task<IActionResult> PostSignInUser([FromBody] SignInDTO loginUser)

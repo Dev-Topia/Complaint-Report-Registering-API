@@ -31,7 +31,7 @@ namespace Complaint_Report_Registering_API.Repositories
             return userExist;
         }
 
-        public async Task<bool> SignUp(SignUpDTO user)
+        public async Task<SignUpResponse> SignUp(SignUpDTO user)
         {
             var newUser = new ApplicationUser()
             {
@@ -47,14 +47,14 @@ namespace Complaint_Report_Registering_API.Repositories
                 var errorDescriptions = createUser.Errors.Select(error => error.Description);
                 var errorMessage = string.Join(" ", errorDescriptions);
                 Console.Error.WriteLine(errorMessage);
-                return false;
+                return new SignUpResponse(false, errorMessage);
             }
             var checkAdmin = await roleManager.FindByNameAsync("Admin");
             if (checkAdmin is null)
             {
                 await roleManager.CreateAsync(new IdentityRole() { Name = "Admin" });
                 await userManager.AddToRoleAsync(newUser, "Admin");
-                return true;
+                return new SignUpResponse(true, "Account successfully created");
             }
             else
             {
@@ -63,23 +63,23 @@ namespace Complaint_Report_Registering_API.Repositories
                     await roleManager.CreateAsync(new IdentityRole() { Name = "User" });
 
                 await userManager.AddToRoleAsync(newUser, "User");
-                return true;
+                return new SignUpResponse(true, "Account successfully created");
             }
         }
 
-        public async Task<LoginResponse> SignIn(SignInDTO user)
+        public async Task<SignInResponse> SignIn(SignInDTO user)
         {
             var getUser = await userManager.FindByEmailAsync(user.Email!);
             if (getUser is null)
-                return new LoginResponse(null!, null!, null!, "User not found");
+                return new SignInResponse(null!, null!, null!, "User not found");
             var result = await signInManager.PasswordSignInAsync(getUser, user.Password!, isPersistent: false, lockoutOnFailure: false);
             if (!result.Succeeded)
-                return new LoginResponse(null!, null!, null!, "Invalid password");
+                return new SignInResponse(null!, null!, null!, "Invalid password");
 
             var getUserRole = await userManager.GetRolesAsync(getUser);
             var userSession = new UserSession(getUser.Id, getUser.FirstName, getUser.LastName, getUser.Email, getUserRole.First());
             string jwtToken = GenerateToken(userSession);
-            return new LoginResponse(jwtToken!, getUser.Id, getUserRole.First(), "Login completed");
+            return new SignInResponse(jwtToken!, getUser.Id, getUserRole.First(), "Login completed");
         }
 
         public async Task<bool> SignOut()
