@@ -13,6 +13,8 @@ namespace Complaint_Report_Registering_API.DTOs.PostDTOs
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; } = string.Empty;
         [Required]
+        public string? Role { get; set; }
+        [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
         [Required]

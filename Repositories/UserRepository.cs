@@ -14,7 +14,7 @@ using static Complaint_Report_Registering_API.DTOs.ServiceResponses;
 namespace Complaint_Report_Registering_API.Repositories
 {
     public class UserRepository(UserManager<ApplicationUser> userManager,
-                                    RoleManager<IdentityRole> roleManager,
+                                    // RoleManager<IdentityRole> roleManager,
                                     SignInManager<ApplicationUser> signInManager,
                                     IConfiguration config,
                                     AppDbContext context) : IUser
@@ -49,22 +49,30 @@ namespace Complaint_Report_Registering_API.Repositories
                 Console.Error.WriteLine(errorMessage);
                 return new SignUpResponse(false, errorMessage);
             }
-            var checkAdmin = await roleManager.FindByNameAsync("Admin");
-            if (checkAdmin is null)
+            // var checkAdmin = await roleManager.FindByNameAsync("Admin");
+            // if (checkAdmin is null)
+            // {
+            //     await roleManager.CreateAsync(new IdentityRole() { Name = "Admin" });
+            //     await userManager.AddToRoleAsync(newUser, "Admin");
+            //     return new SignUpResponse(true, "Account successfully created");
+            // }
+            // else
+            // {
+            // var checkUser = await roleManager.FindByNameAsync("User");
+            // if (checkUser is null)
+            //     await roleManager.CreateAsync(new IdentityRole() { Name = "User" });
+
+            if (user.Role == "User")
             {
-                await roleManager.CreateAsync(new IdentityRole() { Name = "Admin" });
-                await userManager.AddToRoleAsync(newUser, "Admin");
+                await userManager.AddToRoleAsync(newUser, "User");
                 return new SignUpResponse(true, "Account successfully created");
             }
             else
             {
-                var checkUser = await roleManager.FindByNameAsync("User");
-                if (checkUser is null)
-                    await roleManager.CreateAsync(new IdentityRole() { Name = "User" });
-
-                await userManager.AddToRoleAsync(newUser, "User");
+                await userManager.AddToRoleAsync(newUser, "Admin");
                 return new SignUpResponse(true, "Account successfully created");
             }
+            // }
         }
 
         public async Task<SignInResponse> SignIn(SignInDTO user)

@@ -1,5 +1,6 @@
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.DTOs.PostDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Complaint_Report_Registering_API.Controllers
@@ -35,6 +36,7 @@ namespace Complaint_Report_Registering_API.Controllers
             }
         }
         [HttpPost("sign-out")]
+        [Authorize]
         public async Task<IActionResult> PostSignOutUser()
         {
             var response = await user.SignOut();
@@ -45,12 +47,14 @@ namespace Complaint_Report_Registering_API.Controllers
             return Ok(new { msg = "Log out successfully" });
         }
         [HttpGet("get-users")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUsers()
         {
             var getUsers = await user.ViewUsers();
             return Ok(new { data = getUsers });
         }
         [HttpGet("get-user/{userId}")]
+        [Authorize]
         public async Task<IActionResult> GetUser(string userId)
         {
             var getUser = await user.FindUserById(userId);
