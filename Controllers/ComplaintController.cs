@@ -76,7 +76,7 @@ namespace Complaint_Report_Registering_API.Controllers
             return Ok(new { msg = "Complaint type added successfully" });
         }
         [HttpGet("get-complaint-type")]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<IActionResult> GetComplaintTypes()
         {
             var response = await complaint.ViewComplaintTypes();
