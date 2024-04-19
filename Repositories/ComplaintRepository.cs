@@ -1,6 +1,7 @@
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.Data;
 using Complaint_Report_Registering_API.DTOs;
+using Complaint_Report_Registering_API.DTOs.GetDTOs;
 using Complaint_Report_Registering_API.DTOs.PostDTOs;
 using Complaint_Report_Registering_API.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -170,6 +171,47 @@ namespace Complaint_Report_Registering_API.Repositories
                 }
             }).ToList();
             return complaintsToDisplay;
+        }
+
+        public async Task<bool> FindComplaintType(int complaintTypeId)
+        {
+            var complaintType = await context.ComplaintTypes.FindAsync(complaintTypeId);
+            if (complaintType == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<List<ComplaintTypeGetDTO>> ViewComplaintTypes()
+        {
+            var complaintTypes = await context.ComplaintTypes.ToListAsync();
+            var complaintTypesToDisplay = complaintTypes.Select(ct => new ComplaintTypeGetDTO
+            {
+                ComplaintTypeId = ct.ComplaintTypeId,
+                ComplaintType = ct.Type,
+            }).ToList();
+            return complaintTypesToDisplay;
+        }
+
+        public async Task<bool> RemoveComplaintType(int complaintTypeId)
+        {
+            try
+            {
+                var complaintType = await context.ComplaintTypes.FindAsync(complaintTypeId);
+                if (complaintType == null)
+                {
+                    return false;
+                }
+                context.ComplaintTypes.Remove(complaintType);
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
         }
     }
 }

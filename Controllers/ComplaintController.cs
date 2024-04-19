@@ -75,6 +75,29 @@ namespace Complaint_Report_Registering_API.Controllers
             if (!response) return BadRequest(new { msg = "Complaint Type is already exist" });
             return Ok(new { msg = "Complaint type added successfully" });
         }
+        [HttpGet("get-complaint-type")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetComplaintTypes()
+        {
+            var response = await complaint.ViewComplaintTypes();
+            return Ok(new { data = response });
+        }
+        [HttpDelete("delete-complaint-type/{complaintTypeId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteComplaintType([FromRoute] int complaintTypeId)
+        {
+            var findComplainttype = await complaint.FindComplaintType(complaintTypeId);
+            if (!findComplainttype)
+            {
+                return NotFound(new { msg = "Complaint type not found" });
+            }
+            var response = await complaint.RemoveComplaintType(complaintTypeId);
+            if (!response)
+            {
+                return BadRequest(new { msg = "Something went wrong" });
+            }
+            return Ok(new { mgs = "Complaint type deleted successfully" });
+        }
         [HttpPost("add-status-type")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddStatus([FromBody] StatusPostDTO status)
