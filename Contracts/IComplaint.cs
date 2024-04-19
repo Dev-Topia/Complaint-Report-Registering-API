@@ -1,6 +1,7 @@
 using Complaint_Report_Registering_API.DTOs;
 using Complaint_Report_Registering_API.DTOs.GetDTOs;
 using Complaint_Report_Registering_API.DTOs.PostDTOs;
+using static Complaint_Report_Registering_API.DTOs.ServiceResponses;
 
 namespace Complaint_Report_Registering_API.Contracts
 {
@@ -16,6 +17,6 @@ namespace Complaint_Report_Registering_API.Contracts
         Task<bool> AddStatus(StatusPostDTO status);
         Task<List<ComplaintTypeGetDTO>> ViewComplaintTypes();
         Task<bool> AddComplaintType(ComplaintTypePostDTO complaintType);
-        Task<bool> RemoveComplaintType(int complaintTypeId);
+        Task<GeneralResponse> RemoveComplaintType(int complaintTypeId);
     }
 }

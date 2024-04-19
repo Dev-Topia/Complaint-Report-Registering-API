@@ -111,6 +111,8 @@ namespace Complaint_Report_Registering_API.Repositories
                 FirstName = user?.FirstName,
                 LastName = user?.LastName,
                 Email = user?.Email,
+                PhoneNumber = user?.PhoneNumber,
+                ImageUrl = user?.ImageUrl,
                 Role = [.. role],
                 Complaints = user?.Complaints!.Select(c => new ComplaintGetUserDTO
                 {
@@ -147,6 +149,8 @@ namespace Complaint_Report_Registering_API.Repositories
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    ImageUrl = user.ImageUrl,
                     Role = [.. role],
                     Complaints = user.Complaints!.Select(c => new ComplaintGetUserDTO
                     {
@@ -185,6 +189,26 @@ namespace Complaint_Report_Registering_API.Repositories
                 signingCredentials: credentials
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<bool> EditUser(string userId, UserUpdateDTO userUpdate)
+        {
+            try
+            {
+                var userExist = await userManager.FindByIdAsync(userId);
+                userExist!.FirstName = userUpdate.FirstName;
+                userExist.LastName = userUpdate.LastName;
+                userExist.ImageUrl = userUpdate.ImageUrl;
+                userExist.PhoneNumber = userUpdate.PhoneNumber;
+                context.ApplicationUsers.Update(userExist);
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
         }
     }
 }

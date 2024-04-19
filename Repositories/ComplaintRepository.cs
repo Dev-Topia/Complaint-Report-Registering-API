@@ -5,6 +5,7 @@ using Complaint_Report_Registering_API.DTOs.GetDTOs;
 using Complaint_Report_Registering_API.DTOs.PostDTOs;
 using Complaint_Report_Registering_API.Entities;
 using Microsoft.EntityFrameworkCore;
+using static Complaint_Report_Registering_API.DTOs.ServiceResponses;
 
 namespace Complaint_Report_Registering_API.Repositories
 {
@@ -194,23 +195,28 @@ namespace Complaint_Report_Registering_API.Repositories
             return complaintTypesToDisplay;
         }
 
-        public async Task<bool> RemoveComplaintType(int complaintTypeId)
+        public async Task<GeneralResponse> RemoveComplaintType(int complaintTypeId)
         {
             try
             {
+                var findComplaint = await context.Complaints.FirstOrDefaultAsync(c => c.ComplaintTypeId == complaintTypeId);
+                if (findComplaint != null)
+                {
+                    return new GeneralResponse(false, "There is complaint associated with the type");
+                }
                 var complaintType = await context.ComplaintTypes.FindAsync(complaintTypeId);
                 if (complaintType == null)
                 {
-                    return false;
+                    return new GeneralResponse(false, "Complaint type not found");
                 }
                 context.ComplaintTypes.Remove(complaintType);
                 await context.SaveChangesAsync();
-                return true;
+                return new GeneralResponse(true, "Complaint type deleted successfully");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                return false;
+                return new GeneralResponse(false, "Something went wrong");
             }
         }
     }

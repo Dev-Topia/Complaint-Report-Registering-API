@@ -62,5 +62,21 @@ namespace Complaint_Report_Registering_API.Controllers
             var response = await user.ViewUser(userId);
             return Ok(new { data = response });
         }
+        [HttpPut("update-user/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUser([FromRoute] string userId, [FromBody] UserUpdateDTO userUpdate)
+        {
+            var findUser = await user.FindUserById(userId);
+            if (!findUser)
+            {
+                return NotFound(new { msg = "User Not Found" });
+            }
+            var response = await user.EditUser(userId, userUpdate);
+            if (!response)
+            {
+                return BadRequest(new { msg = "User update failed" });
+            }
+            return Ok(new { msg = "User update successfully" });
+        }
     }
 }

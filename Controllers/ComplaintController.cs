@@ -67,6 +67,13 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(new { mgs = "Complaint deleted successfully" });
         }
+        [HttpGet("get-complaint-type")]
+        [Authorize]
+        public async Task<IActionResult> GetComplaintTypes()
+        {
+            var response = await complaint.ViewComplaintTypes();
+            return Ok(new { data = response });
+        }
         [HttpPost("add-complaint-type")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddComplaintType([FromBody] ComplaintTypePostDTO complaintType)
@@ -74,13 +81,6 @@ namespace Complaint_Report_Registering_API.Controllers
             var response = await complaint.AddComplaintType(complaintType);
             if (!response) return BadRequest(new { msg = "Complaint Type is already exist" });
             return Ok(new { msg = "Complaint type added successfully" });
-        }
-        [HttpGet("get-complaint-type")]
-        [Authorize]
-        public async Task<IActionResult> GetComplaintTypes()
-        {
-            var response = await complaint.ViewComplaintTypes();
-            return Ok(new { data = response });
         }
         [HttpDelete("delete-complaint-type/{complaintTypeId}")]
         [Authorize(Roles = "Admin")]
@@ -92,11 +92,11 @@ namespace Complaint_Report_Registering_API.Controllers
                 return NotFound(new { msg = "Complaint type not found" });
             }
             var response = await complaint.RemoveComplaintType(complaintTypeId);
-            if (!response)
+            if (!response.Flag)
             {
-                return BadRequest(new { msg = "Something went wrong" });
+                return BadRequest(new { msg = response.Msg });
             }
-            return Ok(new { mgs = "Complaint type deleted successfully" });
+            return Ok(new { mgs = response.Msg });
         }
         [HttpPost("add-status-type")]
         [Authorize(Roles = "Admin")]
