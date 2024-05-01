@@ -2,6 +2,7 @@ using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.DTOs.PostDTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Bcpg.Sig;
 
 namespace Complaint_Report_Registering_API.Controllers
 {
@@ -32,15 +33,7 @@ namespace Complaint_Report_Registering_API.Controllers
                 {
                     return BadRequest(new { msg = response.Msg });
                 }
-                // HttpContext.Response.Cookies.Append("token", response.Token, new CookieOptions
-                // {
-                //     Expires = DateTime.Now.AddDays(7),
-                //     HttpOnly = true,
-                //     Secure = true,
-                //     SameSite = SameSiteMode.None,
-                //     Domain = ".tarang.site"
-                // });
-                Response.Cookies.Append("X-Access-Token", response.Token, new CookieOptions() { Expires = DateTime.Now.AddDays(7), HttpOnly = true, SameSite = SameSiteMode.None });
+                Response.Cookies.Append("token", response.Token, new CookieOptions() { Expires = DateTime.Now.AddDays(7), HttpOnly = true, Secure = true, SameSite = SameSiteMode.None });
                 return Ok(response);
             }
         }

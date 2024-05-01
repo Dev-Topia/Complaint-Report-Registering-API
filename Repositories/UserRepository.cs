@@ -87,13 +87,6 @@ namespace Complaint_Report_Registering_API.Repositories
             var getUserRole = await userManager.GetRolesAsync(getUser);
             var userSession = new UserSession(getUser.Id, getUser.FirstName, getUser.LastName, getUser.Email, getUserRole.First());
             string jwtToken = GenerateToken(userSession);
-            // var cookieOptions = new CookieOptions
-            // {
-            //     HttpOnly = true,
-            //     Expires = DateTime.UtcNow.AddDays(7), // Set the cookie to expire after 7 days
-            // };
-
-            // Response.Cookies.Append("jwt", jwtToken, cookieOptions);
             return new SignInResponse(jwtToken!, getUser.Id, getUserRole.First(), "Login completed");
         }
 
