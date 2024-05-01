@@ -37,7 +37,8 @@ namespace Complaint_Report_Registering_API.Controllers
                     Expires = DateTime.Now.AddDays(7),
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.None
+                    SameSite = SameSiteMode.None,
+                    Domain = ".tarang.site"
                 });
                 return Ok(response);
             }
