@@ -169,6 +169,7 @@ namespace Complaint_Report_Registering_API.Repositories
                     FirstName = c.ApplicationUser?.FirstName,
                     LastName = c.ApplicationUser?.LastName,
                     Email = c.ApplicationUser?.Email,
+                    ImageUrl = c.ApplicationUser?.ImageUrl
                 }
             }).ToList();
             return complaintsToDisplay;
