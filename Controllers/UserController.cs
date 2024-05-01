@@ -32,6 +32,15 @@ namespace Complaint_Report_Registering_API.Controllers
                 {
                     return BadRequest(new { msg = response.Msg });
                 }
+                else
+                {
+                    var cookieOptions = new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Expires = DateTime.UtcNow.AddDays(7), // Set the cookie to expire after 7 days
+                    };
+                    Response.Cookies.Append("jwt", response.Token, cookieOptions);
+                }
                 return Ok(response);
             }
         }
