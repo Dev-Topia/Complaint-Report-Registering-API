@@ -32,15 +32,13 @@ namespace Complaint_Report_Registering_API.Controllers
                 {
                     return BadRequest(new { msg = response.Msg });
                 }
-                else
+                HttpContext.Response.Cookies.Append("token", response.Token, new CookieOptions
                 {
-                    var cookieOptions = new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Expires = DateTime.UtcNow.AddDays(7), // Set the cookie to expire after 7 days
-                    };
-                    Response.Cookies.Append("jwt", response.Token, cookieOptions);
-                }
+                    Expires = DateTime.Now.AddDays(7),
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None
+                });
                 return Ok(response);
             }
         }
@@ -53,6 +51,7 @@ namespace Complaint_Report_Registering_API.Controllers
             {
                 return BadRequest(new { msg = "Something went wrong" });
             }
+            Response.Cookies.Delete("token");
             return Ok(new { msg = "Log out successfully" });
         }
         [HttpGet("get-users")]
