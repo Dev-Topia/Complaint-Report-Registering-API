@@ -14,5 +14,6 @@ namespace Complaint_Report_Registering_API.Contracts
         Task<bool> FindUserById(string userId);
         Task<bool> FindUserByEmail(string email);
         Task<bool> EditUser(string userId, UserUpdateDTO userUpdate);
+        UserDataFromJWT DecodeJwt(string token);
     }
 }

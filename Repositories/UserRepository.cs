@@ -191,6 +191,31 @@ namespace Complaint_Report_Registering_API.Repositories
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        public UserDataFromJWT DecodeJwt(string token)
+        {
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+                var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                if (roleClaim != null && userIdClaim != null)
+                {
+                    var userData = new UserDataFromJWT
+                    {
+                        UserId = userIdClaim.Value,
+                        Role = roleClaim.Value,
+                    };
+                    return userData;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            return new UserDataFromJWT { };
+        }
+
         public async Task<bool> EditUser(string userId, UserUpdateDTO userUpdate)
         {
             try

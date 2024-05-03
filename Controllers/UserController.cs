@@ -1,3 +1,4 @@
+using System.ComponentModel.Design;
 using Complaint_Report_Registering_API.Contracts;
 using Complaint_Report_Registering_API.DTOs.PostDTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -48,6 +49,26 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             Response.Cookies.Delete("token");
             return Ok(new { msg = "Log out successfully" });
+        }
+        [HttpGet("get-user-data")]
+        public IActionResult GetUserData([FromHeader] string cookie)
+        {
+            if (string.IsNullOrWhiteSpace(cookie))
+            {
+                return BadRequest(new { msg = "Cookie Is Not Provided" });
+            }
+            int tokenIndex = cookie.IndexOf("token=");
+            if (tokenIndex == -1)
+            {
+                return BadRequest(new { msg = "Token Is Not Provided" });
+            }
+            string tokenData = cookie[(tokenIndex + "token=".Length)..];
+            var res = user.DecodeJwt(tokenData);
+            if (res == null)
+            {
+                return BadRequest(new { msg = "Token Is Not Valid" });
+            }
+            return Ok(res);
         }
         [HttpGet("get-users")]
         [Authorize(Roles = "Admin")]

@@ -75,29 +75,46 @@ builder.Services.AddTransient<IMailService, MailService>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins",
-        builder =>
-        {
-            builder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-        });
+    options.AddPolicy("DevCors",
+    builder =>
+    {
+        builder
+        .WithOrigins(
+            "http://localhost:5173"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials()
+        ;
+    });
+    options.AddPolicy("ProdCors",
+    builder =>
+    {
+        builder
+        .WithOrigins(
+            "https://report.devtopia.one"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials()
+        ;
+    });
 });
 
 var app = builder.Build();
 
-// if (app.Environment.IsDevelopment())
-// {
-app.UseSwagger();
-app.UseSwaggerUI();
-// }
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevCors");
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+else
+{
+    app.UseCors("ProdCors");
+    app.UseHttpsRedirection();
+}
 
-// app.MapIdentityApi<IdentityUser>();
-app.UseCors("AllowAllOrigins");
-
-app.UseHttpsRedirection();
-app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
