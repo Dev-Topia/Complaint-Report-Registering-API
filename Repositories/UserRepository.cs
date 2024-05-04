@@ -205,6 +205,7 @@ namespace Complaint_Report_Registering_API.Repositories
                     {
                         UserId = userIdClaim.Value,
                         Role = roleClaim.Value,
+                        Token = token
                     };
                     return userData;
                 }
