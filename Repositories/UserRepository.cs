@@ -236,5 +236,25 @@ namespace Complaint_Report_Registering_API.Repositories
                 return false;
             }
         }
+
+        public async Task<bool> RemoveUser(string userId)
+        {
+            try
+            {
+                var findUser = await context.ApplicationUsers.FindAsync(userId);
+                if (findUser == null)
+                {
+                    return false;
+                }
+                context.ApplicationUsers.Remove(findUser);
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
     }
 }

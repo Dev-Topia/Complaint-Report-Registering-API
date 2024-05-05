@@ -102,5 +102,21 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(new { msg = "User update successfully" });
         }
+        [HttpDelete("delete-user/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteUser([FromRoute] string userId)
+        {
+            var findUser = await user.FindUserById(userId);
+            if (!findUser)
+            {
+                return NotFound(new { msg = "User Not Found" });
+            }
+            var response = await user.RemoveUser(userId);
+            if (!response)
+            {
+                return BadRequest(new { msg = "User Delete failed" });
+            }
+            return Ok(new { msg = "User Delete successfully" });
+        }
     }
 }
