@@ -43,7 +43,7 @@ namespace Complaint_Report_Registering_API.Repositories
             return true;
         }
 
-        public async Task<bool> CreateComplaint(ComplaintPostDTO complaint, string userId)
+        public async Task<CreateComplaintResponse> CreateComplaint(ComplaintPostDTO complaint, string userId)
         {
             var newComplaint = new Complaint
             {
@@ -58,7 +58,7 @@ namespace Complaint_Report_Registering_API.Repositories
             };
             context.Complaints.Add(newComplaint);
             await context.SaveChangesAsync();
-            return true;
+            return new CreateComplaintResponse(true, newComplaint.ComplaintId);
         }
 
         public async Task<bool> EditComplaint(ComplaintPostDTO complaint, int complaintId)

@@ -11,7 +11,7 @@ namespace Complaint_Report_Registering_API.Contracts
         Task<ComplaintGetDTO> ViewComplaint(int complaintId);
         Task<bool> FindComplaint(int complaintId);
         Task<bool> FindComplaintType(int complaintTypeId);
-        Task<bool> CreateComplaint(ComplaintPostDTO complaint, string userId);
+        Task<CreateComplaintResponse> CreateComplaint(ComplaintPostDTO complaint, string userId);
         Task<bool> EditComplaint(ComplaintPostDTO complaint, int complaintId);
         Task<bool> RemoveComplaint(int complaintId);
         Task<bool> AddStatus(StatusPostDTO status);

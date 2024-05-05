@@ -35,11 +35,11 @@ namespace Complaint_Report_Registering_API.Controllers
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var response = await complaint.CreateComplaint(complaintPostDTO, userId!);
-            if (response == false)
+            if (response.Flag == false)
             {
                 return BadRequest(new { msg = "Something went wrong" });
             }
-            return Ok(new { msg = "Complaint successfully created" });
+            return Ok(new { complaintId = response.ComplaintId, msg = "Complaint successfully created" });
         }
         [HttpPut("update-complaint/{complaintId}")]
         [Authorize]
