@@ -22,49 +22,60 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 
 // Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-.AddEntityFrameworkStores<AppDbContext>()
-.AddSignInManager()
-.AddRoles<IdentityRole>()
-.AddDefaultTokenProviders();
+builder
+    .Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddSignInManager()
+    .AddRoles<IdentityRole>()
+    .AddDefaultTokenProviders();
+
 // JWT
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddCookie(x =>
-{
-    x.Cookie.Name = "token";
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+builder
+    .Services.AddAuthentication(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateIssuerSigningKey = true,
-        ValidateLifetime = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-    };
-    options.Events = new JwtBearerEvents
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddCookie(x =>
     {
-        OnMessageReceived = context =>
+        x.Cookie.Name = "token";
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            context.Token = context.Request.Cookies["token"];
-            return Task.CompletedTask;
-        }
-    };
-});
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+            )
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["token"];
+                return Task.CompletedTask;
+            }
+        };
+    });
+
 // Swagger
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-    });
+    options.AddSecurityDefinition(
+        "oauth2",
+        new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Name = "Authorization",
+            Type = SecuritySchemeType.ApiKey,
+        }
+    );
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 builder.Services.AddScoped<IComplaint, ComplaintRepository>();
@@ -75,30 +86,28 @@ builder.Services.AddTransient<IMailService, MailService>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("DevCors",
-    builder =>
-    {
-        builder
-        .WithOrigins(
-            "http://localhost:5173"
-        )
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials()
-        ;
-    });
-    options.AddPolicy("ProdCors",
-    builder =>
-    {
-        builder
-        .WithOrigins(
-            "https://report.devtopia.one"
-        )
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials()
-        ;
-    });
+    options.AddPolicy(
+        "DevCors",
+        builder =>
+        {
+            builder
+                .WithOrigins("http://localhost:5173")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        }
+    );
+    options.AddPolicy(
+        "ProdCors",
+        builder =>
+        {
+            builder
+                .WithOrigins("https://report.devtopia.one")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        }
+    );
 });
 
 var app = builder.Build();

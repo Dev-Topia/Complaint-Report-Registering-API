@@ -55,6 +55,7 @@ namespace Complaint_Report_Registering_API.Repositories
                 UpdatedAt = DateTime.UtcNow,
                 ApplicationUserId = userId,
                 FileUrl = complaint.FileUrl,
+                DepartmentId = complaint.DepartmentId
             };
             context.Complaints.Add(newComplaint);
             await context.SaveChangesAsync();
@@ -123,6 +124,7 @@ namespace Complaint_Report_Registering_API.Repositories
             .Include(c => c.ComplaintType)
             .Include(c => c.Status)
             .Include(c => c.ApplicationUser)
+            .ThenInclude(u => u!.Department)
             .FirstOrDefaultAsync(c => c.ComplaintId == complaintId);
             if (complaint == null) return new ComplaintGetDTO { };
             var complaintToDisplay = new ComplaintGetDTO
@@ -135,12 +137,15 @@ namespace Complaint_Report_Registering_API.Repositories
                 FileUrl = complaint.FileUrl,
                 CreatedAt = complaint.CreatedAt,
                 UpdatedAt = complaint.UpdatedAt,
+                Department = complaint.Department!.DepartmentName,
                 User = new ProfileDTO
                 {
                     UserId = complaint.ApplicationUser?.Id,
                     FirstName = complaint.ApplicationUser?.FirstName,
                     LastName = complaint.ApplicationUser?.LastName,
                     Email = complaint.ApplicationUser?.Email,
+                    ImageUrl = complaint.ApplicationUser?.ImageUrl,
+                    Department = complaint.ApplicationUser!.Department!.DepartmentName,
                 }
             };
             return complaintToDisplay;
@@ -152,6 +157,7 @@ namespace Complaint_Report_Registering_API.Repositories
             .Include(c => c.ComplaintType)
             .Include(c => c.Status)
             .Include(c => c.ApplicationUser)
+            .ThenInclude(u => u!.Department)
             .ToListAsync();
             var complaintsToDisplay = complaints.Select(c => new ComplaintGetDTO
             {
@@ -163,13 +169,15 @@ namespace Complaint_Report_Registering_API.Repositories
                 FileUrl = c.FileUrl,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
+                Department = c.Department!.DepartmentName,
                 User = new ProfileDTO
                 {
                     UserId = c.ApplicationUser?.Id,
                     FirstName = c.ApplicationUser?.FirstName,
                     LastName = c.ApplicationUser?.LastName,
                     Email = c.ApplicationUser?.Email,
-                    ImageUrl = c.ApplicationUser?.ImageUrl
+                    ImageUrl = c.ApplicationUser?.ImageUrl,
+                    Department = c.ApplicationUser!.Department!.DepartmentName,
                 }
             }).ToList();
             return complaintsToDisplay;

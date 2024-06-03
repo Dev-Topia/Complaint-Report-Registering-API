@@ -12,5 +12,6 @@ namespace Complaint_Report_Registering_API.Data
         public DbSet<Complaint> Complaints { get; set; }
         public DbSet<ComplaintType> ComplaintTypes { get; set; }
         public DbSet<Status> Status { get; set; }
+        public DbSet<Department> Departments { get; set; }
     }
 }

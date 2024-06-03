@@ -3,6 +3,7 @@ using System;
 using Complaint_Report_Registering_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Complaint_Report_Registering_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240526111909_add_isSchoolVerified")]
+    partial class add_isSchoolVerified
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,9 +42,6 @@ namespace Complaint_Report_Registering_API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("DepartmentId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -65,8 +65,6 @@ namespace Complaint_Report_Registering_API.Migrations
                     b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("ComplaintTypeId");
-
-                    b.HasIndex("DepartmentId");
 
                     b.HasIndex("StatusId");
 
@@ -365,10 +363,6 @@ namespace Complaint_Report_Registering_API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Complaint_Report_Registering_API.Entities.Department", "Department")
-                        .WithMany("Complaints")
-                        .HasForeignKey("DepartmentId");
-
                     b.HasOne("Complaint_Report_Registering_API.Entities.Status", "Status")
                         .WithMany("Complaints")
                         .HasForeignKey("StatusId")
@@ -378,8 +372,6 @@ namespace Complaint_Report_Registering_API.Migrations
                     b.Navigation("ApplicationUser");
 
                     b.Navigation("ComplaintType");
-
-                    b.Navigation("Department");
 
                     b.Navigation("Status");
                 });
@@ -453,8 +445,6 @@ namespace Complaint_Report_Registering_API.Migrations
 
             modelBuilder.Entity("Complaint_Report_Registering_API.Entities.Department", b =>
                 {
-                    b.Navigation("Complaints");
-
                     b.Navigation("Users");
                 });
 

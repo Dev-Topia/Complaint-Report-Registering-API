@@ -12,5 +12,7 @@ namespace Complaint_Report_Registering_API.DTOs
         [StringLength(250)]
         public string? Description { get; set; }
         public string? FileUrl { get; set; }
+        [Required]
+        public int DepartmentId { get; set; }
     }
 }

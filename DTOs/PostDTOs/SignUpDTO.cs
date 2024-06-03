@@ -15,6 +15,8 @@ namespace Complaint_Report_Registering_API.DTOs.PostDTOs
         [Required]
         public string? Role { get; set; }
         [Required]
+        public int DepartmentId { get; set; }
+        [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
         [Required]

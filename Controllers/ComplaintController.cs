@@ -18,6 +18,7 @@ namespace Complaint_Report_Registering_API.Controllers
             var response = await complaint.ViewComplaints();
             return Ok(new { data = response });
         }
+
         [HttpGet("get-single-complaint/{complaintId}")]
         [Authorize]
         public async Task<IActionResult> GetComplaint([FromRoute] int complaintId)
@@ -29,6 +30,7 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(new { data = response });
         }
+
         [HttpPost("register-complaint")]
         [Authorize]
         public async Task<IActionResult> PostComplaint([FromBody] ComplaintPostDTO complaintPostDTO)
@@ -39,14 +41,21 @@ namespace Complaint_Report_Registering_API.Controllers
             {
                 return BadRequest(new { msg = "Something went wrong" });
             }
-            return Ok(new { complaintId = response.ComplaintId, msg = "Complaint successfully created" });
+            return Ok(
+                new { complaintId = response.ComplaintId, msg = "Complaint successfully created" }
+            );
         }
+
         [HttpPut("update-complaint/{complaintId}")]
         [Authorize]
-        public async Task<IActionResult> PutComplaint([FromRoute] int complaintId, [FromBody] ComplaintPostDTO complaintPostDTO)
+        public async Task<IActionResult> PutComplaint(
+            [FromRoute] int complaintId,
+            [FromBody] ComplaintPostDTO complaintPostDTO
+        )
         {
             var findComplaint = await complaint.FindComplaint(complaintId);
-            if (!findComplaint) return NotFound(new { msg = "Complaint not found" });
+            if (!findComplaint)
+                return NotFound(new { msg = "Complaint not found" });
             var response = await complaint.EditComplaint(complaintPostDTO, complaintId);
             if (!response)
             {
@@ -54,12 +63,14 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(new { mgs = "Complaint updated successfully" });
         }
+
         [HttpDelete("delete-complaint/{complaintId}")]
         [Authorize]
         public async Task<IActionResult> DeleteComplaint([FromRoute] int complaintId)
         {
             var findComplaint = await complaint.FindComplaint(complaintId);
-            if (!findComplaint) return NotFound(new { msg = "Complaint not found" });
+            if (!findComplaint)
+                return NotFound(new { msg = "Complaint not found" });
             var response = await complaint.RemoveComplaint(complaintId);
             if (!response)
             {
@@ -67,6 +78,7 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(new { mgs = "Complaint deleted successfully" });
         }
+
         [HttpGet("get-complaint-type")]
         [Authorize]
         public async Task<IActionResult> GetComplaintTypes()
@@ -74,20 +86,25 @@ namespace Complaint_Report_Registering_API.Controllers
             var response = await complaint.ViewComplaintTypes();
             return Ok(new { data = response });
         }
+
         [HttpPost("add-complaint-type")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddComplaintType([FromBody] ComplaintTypePostDTO complaintType)
+        public async Task<IActionResult> AddComplaintType(
+            [FromBody] ComplaintTypePostDTO complaintType
+        )
         {
             var response = await complaint.AddComplaintType(complaintType);
-            if (!response) return BadRequest(new { msg = "Complaint Type is already exist" });
+            if (!response)
+                return BadRequest(new { msg = "Complaint Type is already exist" });
             return Ok(new { msg = "Complaint type added successfully" });
         }
+
         [HttpDelete("delete-complaint-type/{complaintTypeId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteComplaintType([FromRoute] int complaintTypeId)
         {
-            var findComplainttype = await complaint.FindComplaintType(complaintTypeId);
-            if (!findComplainttype)
+            var findComplaintType = await complaint.FindComplaintType(complaintTypeId);
+            if (!findComplaintType)
             {
                 return NotFound(new { msg = "Complaint type not found" });
             }
@@ -98,12 +115,14 @@ namespace Complaint_Report_Registering_API.Controllers
             }
             return Ok(new { mgs = response.Msg });
         }
+
         [HttpPost("add-status-type")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddStatus([FromBody] StatusPostDTO status)
         {
             var response = await complaint.AddStatus(status);
-            if (!response) return BadRequest(new { msg = "Status is already exist" });
+            if (!response)
+                return BadRequest(new { msg = "Status is already exist" });
             return Ok(new { msg = "Status added successfully" });
         }
     }

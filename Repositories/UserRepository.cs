@@ -13,11 +13,13 @@ using static Complaint_Report_Registering_API.DTOs.ServiceResponses;
 
 namespace Complaint_Report_Registering_API.Repositories
 {
-    public class UserRepository(UserManager<ApplicationUser> userManager,
-                                    // RoleManager<IdentityRole> roleManager,
-                                    SignInManager<ApplicationUser> signInManager,
-                                    IConfiguration config,
-                                    AppDbContext context) : IUser
+    public class UserRepository(
+        UserManager<ApplicationUser> userManager,
+        // RoleManager<IdentityRole> roleManager,
+        SignInManager<ApplicationUser> signInManager,
+        IConfiguration config,
+        AppDbContext context
+    ) : IUser
     {
         public async Task<bool> FindUserByEmail(string email)
         {
@@ -39,8 +41,10 @@ namespace Complaint_Report_Registering_API.Repositories
                 FirstName = user.FirstName,
                 LastName = user.Lastname,
                 Email = user.Email,
+                DepartmentId = user.DepartmentId,
                 PasswordHash = user.Password,
             };
+
             var createUser = await userManager.CreateAsync(newUser!, user.Password);
             if (!createUser.Succeeded)
             {
@@ -80,14 +84,30 @@ namespace Complaint_Report_Registering_API.Repositories
             var getUser = await userManager.FindByEmailAsync(user.Email!);
             if (getUser is null)
                 return new SignInResponse(null!, null!, null!, "User not found");
-            var result = await signInManager.PasswordSignInAsync(getUser, user.Password!, isPersistent: false, lockoutOnFailure: false);
+            var result = await signInManager.PasswordSignInAsync(
+                getUser,
+                user.Password!,
+                isPersistent: false,
+                lockoutOnFailure: false
+            );
             if (!result.Succeeded)
                 return new SignInResponse(null!, null!, null!, "Invalid password");
 
             var getUserRole = await userManager.GetRolesAsync(getUser);
-            var userSession = new UserSession(getUser.Id, getUser.FirstName, getUser.LastName, getUser.Email, getUserRole.First());
+            var userSession = new UserSession(
+                getUser.Id,
+                getUser.FirstName,
+                getUser.LastName,
+                getUser.Email,
+                getUserRole.First()
+            );
             string jwtToken = GenerateToken(userSession);
-            return new SignInResponse(jwtToken!, getUser.Id, getUserRole.First(), "Login completed");
+            return new SignInResponse(
+                jwtToken!,
+                getUser.Id,
+                getUserRole.First(),
+                "Login completed"
+            );
         }
 
         public async Task<bool> SignOut()
@@ -98,8 +118,8 @@ namespace Complaint_Report_Registering_API.Repositories
 
         public async Task<UserGetDTO> ViewUser(string userId)
         {
-            var user = await context.ApplicationUsers
-                .Include(u => u.Complaints!)
+            var user = await context
+                .ApplicationUsers.Include(u => u.Complaints!)
                 .ThenInclude(c => c.ComplaintType!)
                 .Include(u => u.Complaints!)
                 .ThenInclude(c => c.Status)
@@ -124,18 +144,20 @@ namespace Complaint_Report_Registering_API.Repositories
                     FileUrl = c.FileUrl,
                     CreatedAt = c.CreatedAt,
                     UpdatedAt = c.UpdatedAt,
-                }).ToList()
+                })
+                    .ToList()
             };
             return userToDisplay;
         }
 
         public async Task<List<UserGetDTO>> ViewUsers()
         {
-            var users = await context.ApplicationUsers
-                .Include(u => u.Complaints!)
+            var users = await context
+                .ApplicationUsers.Include(u => u.Complaints!)
                 .ThenInclude(c => c.ComplaintType)
                 .Include(u => u.Complaints!)
                 .ThenInclude(c => c.Status)
+                .Include(d => d.Department)
                 .ToListAsync();
 
             var usersToDisplay = new List<UserGetDTO>();
@@ -151,18 +173,20 @@ namespace Complaint_Report_Registering_API.Repositories
                     Email = user.Email,
                     PhoneNumber = user.PhoneNumber,
                     ImageUrl = user.ImageUrl,
+                    Deparment = user.Department!.DepartmentName,
                     Role = [.. role],
                     Complaints = user.Complaints!.Select(c => new ComplaintGetUserDTO
                     {
                         ComplaintId = c.ComplaintId,
                         Title = c.Title,
-                        ComplaintType = c.ComplaintType?.Type,
-                        Status = c.Status?.Type,
+                        ComplaintType = c.ComplaintType!.Type,
+                        Status = c.Status!.Type,
                         Description = c.Description,
                         FileUrl = c.FileUrl,
                         CreatedAt = c.CreatedAt,
                         UpdatedAt = c.UpdatedAt,
-                    }).ToList()
+                    })
+                        .ToList()
                 };
                 usersToDisplay.Add(userDto);
             }
@@ -187,7 +211,7 @@ namespace Complaint_Report_Registering_API.Repositories
                 claims: userClaims,
                 expires: DateTime.Now.AddDays(1),
                 signingCredentials: credentials
-                );
+            );
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
@@ -198,7 +222,9 @@ namespace Complaint_Report_Registering_API.Repositories
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
                 var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
-                var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                var userIdClaim = jwtToken.Claims.FirstOrDefault(c =>
+                    c.Type == ClaimTypes.NameIdentifier
+                );
                 if (roleClaim != null && userIdClaim != null)
                 {
                     var userData = new UserDataFromJWT
@@ -214,6 +240,7 @@ namespace Complaint_Report_Registering_API.Repositories
             {
                 Console.WriteLine(ex);
             }
+
             return new UserDataFromJWT { };
         }
 
@@ -246,6 +273,7 @@ namespace Complaint_Report_Registering_API.Repositories
                 {
                     return false;
                 }
+
                 context.ApplicationUsers.Remove(findUser);
                 await context.SaveChangesAsync();
                 return true;

@@ -17,6 +17,9 @@ namespace Complaint_Report_Registering_API.Entities
         public string? FileUrl { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public int? DepartmentId { get; set; }
+        [JsonIgnore]
+        public Department? Department { get; set; }
         public string? ApplicationUserId { get; set; }
         [JsonIgnore]
         public ApplicationUser? ApplicationUser { get; set; }
