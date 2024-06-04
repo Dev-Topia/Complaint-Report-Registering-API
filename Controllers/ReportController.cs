@@ -1,5 +1,6 @@
 using Complaint_Report_Registering_API.Data;
 using Complaint_Report_Registering_API.DTOs.GetDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace Complaint_Report_Registering_API.Controllers
     public class ReportController(AppDbContext context) : ControllerBase
     {
         [HttpGet("get-departments-report")]
+        [Authorize(Roles = "Admin")]
         public IEnumerable<DepartmentReport> GetDepartmentReport()
         {
             var reports = context.Departments
@@ -26,19 +28,31 @@ namespace Complaint_Report_Registering_API.Controllers
             return reports;
         }
         [HttpGet("get-categories-total-complaint")]
+        [Authorize(Roles = "Admin")]
         public IEnumerable<CategoryReport> GetCategoryReport()
         {
-            var reports = context.Complaints
-                .Include(ct => ct.ComplaintType)
-                .GroupBy(c => c.ComplaintType!.Type)
-                .Select(g => new CategoryReport
-                {
-                    TypeName = g.Key!,
-                    Count = g.Count()
-                })
+            var reports = context.ComplaintTypes
+                .GroupJoin(context.Complaints, complaintType => complaintType.ComplaintTypeId, complaint => complaint.ComplaintTypeId,
+                    (complaintType, complaints) => new CategoryReport
+                    {
+                        TypeName = complaintType.Type,
+                        Count = complaints.Count()
+                    })
                 .ToList();
-
             return reports;
+        }
+        [HttpGet("get-departments-total-complaint")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult GetDepartmentTotalReport()
+        {
+            var reports = context.Departments
+            .GroupJoin(context.Complaints, department => department.DepartmentId, complaint => complaint.DepartmentId,
+            (department, complaint) => new
+            {
+                department.DepartmentName,
+                Count = complaint.Count()
+            }).ToList();
+            return Ok(reports);
         }
     }
 }
